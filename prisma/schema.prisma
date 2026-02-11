@@ -11,3 +11,33 @@ model HealthCheck {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 }
+
+enum GlobalRole {
+  STUDENT
+  SUPERUSER
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  name      String?
+  avatarUrl String?
+  role      GlobalRole @default(STUDENT)
+  isActive  Boolean    @default(true)
+  isBanned  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  otps      EmailOtp[]
+}
+
+model EmailOtp {
+  id        String    @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User?     @relation(fields: [email], references: [email])
+
+  @@index([email])
+}

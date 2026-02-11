@@ -1,0 +1,238 @@
+# MSU Life PWA — Build Log
+
+## Entry 001 — Development Environment Setup
+
+**Date:** 2026-02-11
+**Environment:** WSL2 (Ubuntu 22.04)
+
+### System Configuration
+
+* Node.js: v20.20.0
+* npm: 10.8.2
+* Git: 2.34.1
+* Development directory: `/home/david/msu-life`
+
+### Git Configuration
+
+Configured global Git identity:
+
+```
+git config --global user.name "David Alonso"
+git config --global user.email "davidalonsog97@gmail.com"
+```
+
+SSH authentication configured:
+
+* Generated ED25519 key
+* Added public key to GitHub
+* Verified connection using:
+
+```
+ssh -T git@github.com
+```
+
+Authentication confirmed successful.
+
+---
+
+## Entry 002 — Project Initialization
+
+Created new Next.js project using:
+
+```
+npx create-next-app@latest . --ts --eslint --tailwind --app --src-dir --import-alias "@/*"
+```
+
+Options:
+
+* TypeScript enabled
+* App Router enabled
+* Tailwind enabled
+* React Compiler disabled (for stability)
+
+Verified local server:
+
+```
+npm run dev
+```
+
+Local app successfully running at:
+
+```
+http://localhost:3000
+```
+
+---
+
+## Entry 003 — Version Control & GitHub Integration
+
+Initialized Git repository:
+
+```
+git init
+git add .
+git commit -m "chore: initial Next.js setup"
+```
+
+Created GitHub repository:
+
+* Name: `msu-life`
+* Visibility: Public
+* Empty repository (no README)
+
+Connected local repo to GitHub via SSH:
+
+```
+git remote set-url origin git@github.com:mrdeived/msu-life.git
+git push -u origin main
+```
+
+Push successful. Branch `main` tracking remote.
+
+---
+
+## Entry 004 — Railway Deployment (Initial)
+
+Created Railway project:
+
+* Connected GitHub repository
+* Automatic build detected (Next.js)
+
+Verified:
+
+* Successful production deployment
+* Public URL accessible
+* Default Next.js page loads correctly
+
+Pipeline confirmed:
+GitHub → Railway → Production
+
+---
+
+## Entry 005 — PostgreSQL Integration
+
+Added PostgreSQL service to Railway project.
+
+Configured environment variable:
+
+* `DATABASE_URL` linked to Postgres service
+* Confirmed variable available in Web service
+
+---
+
+## Entry 006 — Prisma Setup
+
+Installed Prisma:
+
+```
+npm install prisma @prisma/client
+```
+
+Initial version (v7) caused schema conflict.
+Downgraded to stable v6:
+
+```
+npm remove prisma @prisma/client
+npm install prisma@6 @prisma/client@6
+```
+
+Removed `prisma.config.ts` to restore `.env` loading behavior.
+
+Configured `.env` with Railway `DATABASE_URL`.
+
+---
+
+## Entry 007 — Initial Database Schema & Migration
+
+Created minimal schema:
+
+```prisma
+model HealthCheck {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+}
+```
+
+Executed migration:
+
+```
+npx prisma migrate dev --name init
+```
+
+Migration applied successfully to Railway Postgres.
+Prisma Client generated.
+
+---
+
+## Entry 008 — Backend API Verification
+
+Created endpoint:
+
+`src/app/api/health/route.ts`
+
+Functionality:
+
+* Inserts record into `HealthCheck`
+* Returns `{ ok: true }`
+
+Verified:
+
+* Local endpoint working
+* Production endpoint working:
+
+  * `/api/health` returns `{ ok: true }`
+  * Database write confirmed in production
+
+System confirmed operational end-to-end:
+Frontend → API → Prisma → Railway Postgres → Production
+
+---
+
+## Current System State
+
+The system now has:
+
+* Next.js App Router application
+* GitHub repository with SSH authentication
+* Continuous deployment via Railway
+* PostgreSQL hosted in Railway
+* Prisma migrations working
+* API writing to production database
+* Local and production environments aligned
+
+Development foundation complete.
+
+---
+
+## Entry 009 — User & EmailOtp Schema (V1 Auth Start)
+
+**Date:** 2026-02-11
+
+### Summary
+
+- Added `GlobalRole` enum (`STUDENT`, `SUPERUSER`)
+- Added `User` model (cuid PK, unique email, optional name/avatarUrl, role default STUDENT, isActive/isBanned flags, timestamps)
+- Added `EmailOtp` model (cuid PK, email indexed, hashed code, expiry, single-use tracking via `usedAt`, optional relation to User by email)
+
+### Commands
+
+```
+npx prisma migrate dev --name add_user_and_emailotp
+```
+
+Migration applied: `20260211062919_add_user_and_emailotp`
+Prisma Client regenerated (v6.19.2).
+
+### Verification
+
+- `npx next build` — compiled successfully
+- `/api/health` — returns `{"ok":true}`, DB write confirmed
+- No breakage to existing HealthCheck model
+
+### Notes
+
+- No endpoints or route handlers implemented in this step
+- `org_admin` role deferred to org membership phase
+- EmailOtp FK references User.email (cascade on update, restrict on delete)
+
+---
