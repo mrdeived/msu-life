@@ -1,0 +1,71 @@
+import { prisma } from "@/lib/prisma";
+import { verifyOtpSchema } from "@/lib/validation";
+import { hashOtp } from "@/lib/otp";
+
+const ALLOWED_DOMAIN = (process.env.ALLOWED_EMAIL_DOMAIN ?? "ndus.edu").toLowerCase();
+
+export async function POST(request: Request) {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parsed = verifyOtpSchema.safeParse(body);
+  if (!parsed.success) {
+    return Response.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  const { email, code } = parsed.data;
+  const domain = email.split("@")[1];
+
+  if (domain !== ALLOWED_DOMAIN) {
+    return Response.json({ error: "Email domain not allowed" }, { status: 403 });
+  }
+
+  const codeHash = hashOtp(email, code);
+
+  const otpRecord = await prisma.emailOtp.findFirst({
+    where: {
+      email,
+      codeHash,
+      usedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!otpRecord) {
+    return Response.json({ error: "Invalid or expired code" }, { status: 401 });
+  }
+
+  const user = await prisma.$transaction(async (tx) => {
+    const updated = await tx.emailOtp.updateMany({
+      where: { id: otpRecord.id, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+
+    if (updated.count === 0) {
+      return null;
+    }
+
+    return tx.user.upsert({
+      where: { email },
+      update: {},
+      create: {
+        email,
+        role: "STUDENT",
+        isActive: true,
+        isBanned: false,
+      },
+      select: { id: true, email: true, role: true },
+    });
+  });
+
+  if (!user) {
+    return Response.json({ error: "Invalid or expired code" }, { status: 401 });
+  }
+
+  return Response.json({ ok: true, user });
+}

@@ -334,3 +334,41 @@ curl tests
 - `/api/health` — still returns `{"ok":true}`
 
 ---
+
+## Entry 013 — Auth: Verify OTP Endpoint (Create User)
+
+**Date:** 2026-02-11
+
+### Summary
+
+- Added `POST /api/auth/verify-otp` route handler
+- Validates email + 6-digit code with Zod, enforces NDUS domain
+- Verifies OTP by hash match + expiry + single-use (`usedAt` null guard)
+- Uses `prisma.$transaction` to atomically mark OTP used and upsert User
+- Creates User with role `STUDENT` on first successful verification
+- Returns `{ ok: true, user: { id, email, role } }`
+
+### Files Added/Edited
+
+- `src/app/api/auth/verify-otp/route.ts` (new)
+- `src/lib/validation.ts` (added `verifyOtpSchema`)
+
+### Commands
+
+```
+npx next build
+curl request-otp + verify-otp tests
+```
+
+### Verification
+
+- Valid code → `200 {"ok":true,"user":{"id":"...","email":"verifytest3@ndus.edu","role":"STUDENT"}}`
+- Reuse same code → `401 {"error":"Invalid or expired code"}`
+- Wrong code → `401 {"error":"Invalid or expired code"}`
+- `/api/health` — still returns `{"ok":true}`
+
+### Notes
+
+- Sessions/cookies deferred to next step
+
+---
