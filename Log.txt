@@ -458,3 +458,32 @@ npx next build
 - cookies() is read-only in Server Components; stale cookies cleared on next login
 
 ---
+
+## Entry 016 — Auth: Debug OTP Return (Controlled)
+
+### Date
+
+2026-02-11
+
+### Summary
+
+- Added guarded debug mode to return OTP in API response for testing without email provider
+- Default production behavior unchanged (returns only {ok:true})
+
+### Env
+
+- `OTP_DEBUG_RETURN_CODE` (default false)
+
+### Commands
+
+```
+npx next build
+curl POST /api/auth/request-otp (verify debug response only when enabled)
+```
+
+### Verification
+
+- Production: when `OTP_DEBUG_RETURN_CODE=true`, request-otp returns `debug.code` and verify-otp succeeds and sets cookie
+- Production: when `OTP_DEBUG_RETURN_CODE=false`, request-otp returns only `{ok:true}`
+
+---

@@ -47,8 +47,16 @@ export async function POST(request: Request) {
     data: { email, codeHash, expiresAt },
   });
 
-  if (process.env.NODE_ENV !== "production") {
+  const isNonProd = process.env.NODE_ENV !== "production";
+
+  if (isNonProd) {
     console.log(`OTP for ${email}: ${otp}`);
+  }
+
+  const debugEnabled = isNonProd || process.env.OTP_DEBUG_RETURN_CODE === "true";
+
+  if (debugEnabled) {
+    return Response.json({ ok: true, debug: { code: otp, expiresInSeconds: OTP_TTL } });
   }
 
   return Response.json({ ok: true });
