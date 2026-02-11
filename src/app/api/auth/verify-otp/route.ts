@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { verifyOtpSchema } from "@/lib/validation";
 import { hashOtp } from "@/lib/otp";
+import { signSession, sessionCookieHeader } from "@/lib/session";
 
 const ALLOWED_DOMAIN = (process.env.ALLOWED_EMAIL_DOMAIN ?? "ndus.edu").toLowerCase();
 
@@ -67,5 +68,9 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid or expired code" }, { status: 401 });
   }
 
-  return Response.json({ ok: true, user });
+  const cookieValue = signSession({ uid: user.id, email: user.email, role: user.role });
+
+  return Response.json({ ok: true, user }, {
+    headers: { "Set-Cookie": sessionCookieHeader(cookieValue) },
+  });
 }

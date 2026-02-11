@@ -372,3 +372,49 @@ curl request-otp + verify-otp tests
 - Sessions/cookies deferred to next step
 
 ---
+
+## Entry 014 — Auth: Session Cookie (me + logout)
+
+**Date:** 2026-02-11
+
+### Summary
+
+- Added signed HttpOnly session cookie on `verify-otp` success
+- Cookie format: `base64url(payload).base64url(hmac-sha256)`, cookie name `msu_life_session`
+- Payload: `{ uid, email, role, exp }` with configurable TTL (default 30 days)
+- Added `GET /api/auth/me` — returns user from DB if session valid, checks `isActive`/`isBanned`
+- Added `POST /api/auth/logout` — clears cookie with `Max-Age=0`
+- Cookie flags: `HttpOnly; SameSite=Lax; Path=/`; `Secure` added in production only
+- Implemented `src/lib/session.ts` (sign/verify, cookie header helpers) and `src/lib/auth.ts` (parse cookie from request)
+- Updated `.env.example` with `SESSION_SECRET` and `SESSION_TTL_SECONDS`
+
+### Files Added/Edited
+
+- `src/lib/session.ts` (new)
+- `src/lib/auth.ts` (new)
+- `src/app/api/auth/me/route.ts` (new)
+- `src/app/api/auth/logout/route.ts` (new)
+- `src/app/api/auth/verify-otp/route.ts` (edited — sets cookie on success)
+- `.env.example` (edited)
+
+### Commands
+
+```
+npx next build
+curl verify-otp (capture Set-Cookie), me, logout tests
+```
+
+### Verification
+
+- `verify-otp` → `200` with `Set-Cookie: msu_life_session=...; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000`
+- `/api/auth/me` with cookie → `200 {"ok":true,"user":{"id":"...","email":"sessiontest@ndus.edu","role":"STUDENT"}}`
+- `/api/auth/logout` → `200 {"ok":true}` with `Set-Cookie: msu_life_session=; Max-Age=0`
+- `/api/auth/me` without cookie → `401 {"error":"Not authenticated"}`
+- `/api/health` — still returns `{"ok":true}`
+
+### Notes
+
+- UI protected routes deferred to next step
+- `SESSION_SECRET` must be set in Railway env vars before deploying
+
+---
