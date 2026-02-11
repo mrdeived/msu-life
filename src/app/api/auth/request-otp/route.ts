@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { requestOtpSchema } from "@/lib/validation";
 import { generateOtp, hashOtp } from "@/lib/otp";
-
-const prisma = new PrismaClient();
 
 const ALLOWED_DOMAIN = (process.env.ALLOWED_EMAIL_DOMAIN ?? "ndus.edu").toLowerCase();
 const OTP_TTL = parseInt(process.env.OTP_TTL_SECONDS ?? "600", 10);

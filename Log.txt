@@ -310,3 +310,27 @@ curl tests (200, 403, 400 status codes verified)
 - Zod was already in dependency tree (no new install needed)
 
 ---
+
+## Entry 012 — Stabilize Prisma Client (Singleton)
+
+**Date:** 2026-02-11
+
+### Summary
+
+- Added Prisma singleton in `src/lib/prisma.ts` to avoid exhausting DB connections in Next.js
+- Updated `request-otp` route to use shared prisma instance
+- Updated `health` route to use shared prisma instance
+
+### Commands
+
+```
+npx next build
+curl tests
+```
+
+### Verification
+
+- `/api/auth/request-otp` — still returns `200 {"ok":true}` for NDUS emails
+- `/api/health` — still returns `{"ok":true}`
+
+---
