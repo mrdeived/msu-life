@@ -266,3 +266,47 @@ Prisma Client regenerated (v6.19.2).
 - User creation will occur during OTP verification step (future endpoint)
 
 ---
+
+## Entry 011 — Auth: Request OTP Endpoint (NDUS Restricted)
+
+**Date:** 2026-02-11
+
+### Summary
+
+- Added `POST /api/auth/request-otp` route handler
+- Validates email with Zod and restricts domain via `ALLOWED_EMAIL_DOMAIN` (default `ndus.edu`)
+- Generates 6-digit OTP (leading zeros preserved), hashes with sha256 (`email:otp:pepper`), stores in `EmailOtp` with configurable expiry (`OTP_TTL_SECONDS`, default 600)
+- Dev-only logging of OTP to server console; no OTP returned in API response
+- Rate limiting: max 5 OTPs per email in 10-minute window (DB-based, returns 429)
+- Created `src/lib/otp.ts` (generate + hash helpers) and `src/lib/validation.ts` (Zod schema)
+- Added `.env.example` with all env vars documented
+
+### Files Added
+
+- `src/app/api/auth/request-otp/route.ts`
+- `src/lib/otp.ts`
+- `src/lib/validation.ts`
+- `.env.example`
+
+### Commands
+
+```
+npm install zod
+npx next build
+curl tests (200, 403, 400 status codes verified)
+```
+
+### Verification
+
+- `npx next build` — compiled successfully, route listed as `ƒ /api/auth/request-otp`
+- Valid NDUS email → `200 {"ok":true}`, OTP logged in dev console
+- Non-NDUS email → `403 {"error":"Email domain not allowed"}`
+- Invalid JSON → `400 {"error":"Invalid JSON"}`
+- `/api/health` — still returns `{"ok":true}`
+
+### Notes
+
+- Email provider integration deferred (Resend/SendGrid planned)
+- Zod was already in dependency tree (no new install needed)
+
+---
