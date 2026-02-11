@@ -418,3 +418,43 @@ curl verify-otp (capture Set-Cookie), me, logout tests
 - `SESSION_SECRET` must be set in Railway env vars before deploying
 
 ---
+
+## Entry 015 — UI: Login + Protected Home (V1 Auth UI)
+
+### Date
+
+2026-02-11
+
+### Summary
+
+- Added /login UI for NDUS OTP flow (request + verify)
+- Added protected /home page using session cookie verification on server
+- Added logout button to clear session and redirect to login
+
+### Files Changed
+
+- Added: `src/lib/requireAuth.ts` — server-side auth helper using `cookies()` + `verifySession()`
+- Added: `src/app/login/page.tsx` — two-step OTP login (email → code)
+- Added: `src/app/home/page.tsx` — server-protected home page
+- Added: `src/components/LogoutButton.tsx` — client component for logout
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- /home redirects to /login when unauthenticated
+- OTP login works end-to-end and creates session cookie
+- Logout clears cookie and /home becomes inaccessible
+- /api/health still OK
+
+### Notes
+
+- Styling minimal; feed UI deferred
+- No (authed) route group — using requireAuth() directly in server pages for simplicity
+- cookies() is read-only in Server Components; stale cookies cleared on next login
+
+---
