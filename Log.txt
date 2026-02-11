@@ -236,3 +236,33 @@ Prisma Client regenerated (v6.19.2).
 - EmailOtp FK references User.email (cascade on update, restrict on delete)
 
 ---
+
+## Entry 010 — Fix EmailOtp FK (Allow OTP Before User)
+
+**Date:** 2026-02-11
+
+### Summary
+
+- Removed `EmailOtp -> User.email` FK constraint to allow OTP creation before User exists (required for NDUS OTP flow)
+- Removed `otps` relation field from `User` model and `user` relation field from `EmailOtp` model
+
+### Commands
+
+```
+npx prisma migrate dev --name fix_emailotp_fk
+```
+
+Migration applied: `20260211064357_fix_emailotp_fk`
+Prisma Client regenerated (v6.19.2).
+
+### Verification
+
+- `npx next build` — compiled successfully
+- `/api/health` — returns `{"ok":true}`
+- `scripts/test-otp-insert.ts` — inserts successfully (`✅ Inserted OTP`)
+
+### Notes
+
+- User creation will occur during OTP verification step (future endpoint)
+
+---
