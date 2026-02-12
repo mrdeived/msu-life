@@ -516,3 +516,29 @@ npx next build
 - Dev flow unchanged; production sends OTP email and verify-otp works
 
 ---
+
+## Entry 018 — Auth: Demo OTP Bypass (000000)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added demo bypass to accept code "000000" on verify-otp when OTP_DEMO_BYPASS=true
+- Still enforces ALLOWED_EMAIL_DOMAIN
+- Normal OTP verification path unchanged when bypass disabled
+
+### Commands
+
+```
+npx next build
+curl verify-otp + me tests
+```
+
+### Verification
+
+- OTP_DEMO_BYPASS=false → 000000 rejected
+- OTP_DEMO_BYPASS=true → 000000 accepted, session cookie set, /me ok
+
+---
