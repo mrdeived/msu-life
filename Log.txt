@@ -698,3 +698,27 @@ npx next build
 - /feed requires auth and displays DB events (or empty state)
 
 ---
+
+## Entry 026 — UI: Event Detail Page (DB-backed)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added server-protected /event/[id] page that loads a published event from Prisma
+- Implemented MSU-branded detail layout with back navigation to /feed
+- /feed cards already link to /event/[id]
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Clicking an event in /feed opens /event/[id] and renders DB data (no mock)
+
+---
