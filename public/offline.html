@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MSU Life — Offline</title>
+<style>
+  :root { --msu-red: #cf2e2e; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #0a0a0a; color: #ededed; }
+    .btn { background: var(--msu-red); color: #fff; }
+  }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f9fafb; color: #171717; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .card { text-align: center; padding: 1.5rem; }
+  h1 { font-size: 1.5rem; font-weight: 700; color: var(--msu-red); margin: 0 0 0.5rem; }
+  p { font-size: 0.875rem; color: #6b7280; margin: 0 0 1rem; }
+  .btn { display: inline-block; padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--msu-red); color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>You're offline</h1>
+  <p>Check your connection and try again.</p>
+  <button class="btn" onclick="location.reload()">Retry</button>
+</div>
+</body>
+</html>

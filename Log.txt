@@ -649,3 +649,28 @@ npx next build
 - /home renders real DB data for Upcoming + Announcements (no mock), protected route unchanged
 
 ---
+
+## Entry 024 — PWA: iOS Standalone Offline Fallback Fix
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Updated service worker navigation detection to support iOS standalone document requests
+- Navigation fallback now triggers for `request.mode === "navigate"` OR `request.destination === "document"`
+- Added static `public/offline.html` (zero JS dependencies) as the cached fallback
+- Bumped service worker cache version to v3 to force update
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- iPhone Home Screen launch in Airplane Mode shows offline.html instead of client-side exception
+
+---

@@ -1,5 +1,5 @@
-const CACHE_NAME = "msu-life-v1";
-const OFFLINE_URL = "/offline";
+const CACHE_NAME = "msu-life-v3";
+const OFFLINE_URL = "/offline.html";
 
 const PRECACHE_URLS = [OFFLINE_URL];
 
@@ -29,8 +29,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.pathname.startsWith("/api/")) return;
 
-  // For navigation requests: network-first, fallback to offline page
-  if (request.mode === "navigate") {
+  // Navigation: request.mode === "navigate" OR destination === "document"
+  // iOS standalone mode sometimes omits navigate mode for top-level loads
+  const isNavigation = request.mode === "navigate" || request.destination === "document";
+
+  if (isNavigation) {
     event.respondWith(
       fetch(request).catch(() => caches.match(OFFLINE_URL))
     );
