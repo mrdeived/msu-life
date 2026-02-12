@@ -595,3 +595,31 @@ npx next build
 - No auth logic changes
 
 ---
+
+## Entry 021 — PWA: Minimal Offline Shell
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added PWA manifest via `src/app/manifest.ts` (Next.js metadata route)
+- Added placeholder icons (192px + 512px solid MSU red PNGs)
+- Added handwritten service worker (`public/sw.js`) with offline fallback
+- Added `/offline` page with retry button
+- Service worker registered from layout via client component
+- Updated layout metadata to "MSU Life"
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- manifest loads at /manifest.webmanifest
+- offline fallback works when network disconnected
+
+---
