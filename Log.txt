@@ -722,3 +722,28 @@ npx next build
 - Clicking an event in /feed opens /event/[id] and renders DB data (no mock)
 
 ---
+
+## Entry 027 — Feature: Event Attendance (Attend/Unattend)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added EventAttendance model with unique (userId, eventId)
+- Implemented attend/unattend API routes for events
+- Updated /event/[id] to show attendee count and toggle attend button
+
+### Commands
+
+```
+npx prisma migrate dev --name add_event_attendance
+npx next build
+```
+
+### Verification
+
+- Logged-in user can attend/unattend an event and attendee count updates
+
+---

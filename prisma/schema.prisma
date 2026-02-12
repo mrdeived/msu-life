@@ -18,15 +18,16 @@ enum GlobalRole {
 }
 
 model User {
-  id        String     @id @default(cuid())
-  email     String     @unique
-  name      String?
-  avatarUrl String?
-  role      GlobalRole @default(STUDENT)
-  isActive  Boolean    @default(true)
-  isBanned  Boolean    @default(false)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id          String            @id @default(cuid())
+  email       String            @unique
+  name        String?
+  avatarUrl   String?
+  role        GlobalRole        @default(STUDENT)
+  isActive    Boolean           @default(true)
+  isBanned    Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  attendances EventAttendance[]
 }
 
 model EmailOtp {
@@ -41,15 +42,16 @@ model EmailOtp {
 }
 
 model Event {
-  id          String    @id @default(cuid())
+  id          String            @id @default(cuid())
   title       String
   description String?
   location    String?
   startAt     DateTime
   endAt       DateTime?
-  isPublished Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isPublished Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  attendances EventAttendance[]
 
   @@index([startAt])
   @@index([isPublished])
@@ -64,4 +66,18 @@ model Announcement {
 
   @@index([isActive])
   @@index([createdAt])
+}
+
+model EventAttendance {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@index([userId])
 }
