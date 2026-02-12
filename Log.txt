@@ -623,3 +623,29 @@ npx next build
 - offline fallback works when network disconnected
 
 ---
+
+## Entry 023 — Data: Events + Announcements (DB-backed, Read-only)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added Event and Announcement models to Prisma schema
+- Created read-only GET endpoints for events and announcements
+- Replaced mock dashboard data on /home with Prisma queries
+- Added optional demo seed script
+
+### Commands
+
+```
+npx prisma migrate dev --name add_events_and_announcements
+npx next build
+```
+
+### Verification
+
+- /home renders real DB data for Upcoming + Announcements (no mock), protected route unchanged
+
+---

@@ -1,9 +1,24 @@
 import { requireAuth } from "@/lib/requireAuth";
-import { mockEvents, mockAnnouncements } from "@/lib/mockData";
+import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/components/LogoutButton";
 
 export default async function HomePage() {
   const user = await requireAuth();
+
+  const [events, announcements] = await Promise.all([
+    prisma.event.findMany({
+      where: { isPublished: true, startAt: { gt: new Date() } },
+      orderBy: { startAt: "asc" },
+      take: 10,
+      select: { id: true, title: true, location: true, startAt: true },
+    }),
+    prisma.announcement.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: { id: true, title: true, body: true },
+    }),
+  ]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -23,30 +38,40 @@ export default async function HomePage() {
           {/* Upcoming Events */}
           <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
             <h2 className="text-base font-semibold mb-4 text-msu-red">Upcoming</h2>
-            <ul className="space-y-3">
-              {mockEvents.map((e) => (
-                <li key={e.id} className="flex justify-between items-start gap-2">
-                  <div>
-                    <p className="text-sm font-medium">{e.title}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{e.location}</p>
-                  </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{e.date}</span>
-                </li>
-              ))}
-            </ul>
+            {events.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No upcoming events yet.</p>
+            ) : (
+              <ul className="space-y-3">
+                {events.map((e) => (
+                  <li key={e.id} className="flex justify-between items-start gap-2">
+                    <div>
+                      <p className="text-sm font-medium">{e.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{e.location}</p>
+                    </div>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                      {e.startAt.toLocaleDateString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
 
           {/* Announcements */}
           <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
             <h2 className="text-base font-semibold mb-4 text-msu-red">Announcements</h2>
-            <ul className="space-y-3">
-              {mockAnnouncements.map((a) => (
-                <li key={a.id}>
-                  <p className="text-sm font-medium">{a.title}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{a.body}</p>
-                </li>
-              ))}
-            </ul>
+            {announcements.length === 0 ? (
+              <p className="text-sm text-gray-500 dark:text-gray-400">No announcements.</p>
+            ) : (
+              <ul className="space-y-3">
+                {announcements.map((a) => (
+                  <li key={a.id}>
+                    <p className="text-sm font-medium">{a.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{a.body}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
         </div>
 
