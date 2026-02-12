@@ -487,3 +487,32 @@ curl POST /api/auth/request-otp (verify debug response only when enabled)
 - Production: when `OTP_DEBUG_RETURN_CODE=false`, request-otp returns only `{ok:true}`
 
 ---
+
+## Entry 017 — Email: Resend OTP Delivery
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Integrated Resend to deliver OTP codes by email in production
+- request-otp now sends email after storing OTP (production only)
+
+### Env
+
+- `RESEND_API_KEY`
+- `RESEND_FROM`
+
+### Commands
+
+```
+npm install resend
+npx next build
+```
+
+### Verification
+
+- Dev flow unchanged; production sends OTP email and verify-otp works
+
+---

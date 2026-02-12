@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requestOtpSchema } from "@/lib/validation";
 import { generateOtp, hashOtp } from "@/lib/otp";
+import { sendOtpEmail } from "@/lib/email";
 
 const ALLOWED_DOMAIN = (process.env.ALLOWED_EMAIL_DOMAIN ?? "ndus.edu").toLowerCase();
 const OTP_TTL = parseInt(process.env.OTP_TTL_SECONDS ?? "600", 10);
@@ -51,6 +52,15 @@ export async function POST(request: Request) {
 
   if (isNonProd) {
     console.log(`OTP for ${email}: ${otp}`);
+  }
+
+  if (!isNonProd) {
+    try {
+      await sendOtpEmail({ to: email, code: otp, ttlSeconds: OTP_TTL });
+    } catch (err) {
+      console.error("Failed to send OTP email:", err);
+      return Response.json({ error: "Failed to send email" }, { status: 500 });
+    }
   }
 
   const debugEnabled = isNonProd || process.env.OTP_DEBUG_RETURN_CODE === "true";
