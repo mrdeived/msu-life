@@ -674,3 +674,27 @@ npx next build
 - iPhone Home Screen launch in Airplane Mode shows offline.html instead of client-side exception
 
 ---
+
+## Entry 025 — UI: Events Feed Page (DB-backed)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added server-protected /feed page that lists upcoming published events from Prisma
+- Implemented MSU-branded card UI with links to /event/[id]
+- Wired Home "Browse Events" quick action to /feed
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- /feed requires auth and displays DB events (or empty state)
+
+---

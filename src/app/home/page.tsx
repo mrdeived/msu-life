@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/components/LogoutButton";
@@ -79,7 +80,13 @@ export default async function HomePage() {
         <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
           <h2 className="text-base font-semibold mb-4">Quick Actions</h2>
           <div className="flex flex-wrap gap-3">
-            {["Create Event", "Browse Events", "My Profile"].map((label) => (
+            <Link
+              href="/feed"
+              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+            >
+              Browse Events
+            </Link>
+            {["Create Event", "My Profile"].map((label) => (
               <button
                 key={label}
                 disabled
