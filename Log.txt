@@ -568,3 +568,30 @@ npx next build
 - Logout still works
 
 ---
+
+## Entry 020 — UI: MSU Branding Colors (Red/White/Green)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Introduced MSU color tokens (red/white/green) via CSS variables + Tailwind @theme
+- Updated Home top bar to MSU red with green bottom accent
+- Updated section headings to MSU red
+- Updated Logout button for white-on-red header
+- Updated Login page buttons/inputs from blue to MSU red
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Home + Login render correctly on mobile/desktop
+- No auth logic changes
+
+---

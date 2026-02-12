@@ -3,11 +3,17 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --msu-red: #cf2e2e;
+  --msu-green: #006747;
+  --msu-white: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-msu-red: var(--msu-red);
+  --color-msu-green: var(--msu-green);
+  --color-msu-white: var(--msu-white);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

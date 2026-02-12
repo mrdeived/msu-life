@@ -8,10 +8,10 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Top bar */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-green-700 dark:text-green-400">MSU Life</h1>
+      <header className="bg-msu-red border-b-2 border-msu-green px-4 py-3 flex items-center justify-between">
+        <h1 className="text-lg font-bold text-msu-white">MSU Life</h1>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">{user.email}</span>
+          <span className="text-sm text-msu-white/80 hidden sm:inline">{user.email}</span>
           <LogoutButton />
         </div>
       </header>
@@ -22,7 +22,7 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Upcoming Events */}
           <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
-            <h2 className="text-base font-semibold mb-4">Upcoming</h2>
+            <h2 className="text-base font-semibold mb-4 text-msu-red">Upcoming</h2>
             <ul className="space-y-3">
               {mockEvents.map((e) => (
                 <li key={e.id} className="flex justify-between items-start gap-2">
@@ -38,7 +38,7 @@ export default async function HomePage() {
 
           {/* Announcements */}
           <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
-            <h2 className="text-base font-semibold mb-4">Announcements</h2>
+            <h2 className="text-base font-semibold mb-4 text-msu-red">Announcements</h2>
             <ul className="space-y-3">
               {mockAnnouncements.map((a) => (
                 <li key={a.id}>
