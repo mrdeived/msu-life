@@ -542,3 +542,29 @@ curl verify-otp + me tests
 - OTP_DEMO_BYPASS=true → 000000 accepted, session cookie set, /me ok
 
 ---
+
+## Entry 019 — UI: Home Dashboard (Mock Data)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Replaced minimal /home view with a dashboard-style UI using mock data
+- Kept server-side route protection intact
+- Added mock data module for upcoming events + announcements
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- /home redirects when unauthenticated
+- Logged-in users see dashboard with email + role + sections
+- Logout still works
+
+---
