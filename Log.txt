@@ -1417,3 +1417,24 @@ npx next build
 - Username persists, is unique, editable, and displayName prefers @username
 
 ---
+
+## Entry 055 — UI: Show Creator Username on Event Detail
+
+**Date:** 2026-02-12
+
+### Summary
+
+- Displayed event creator handle (@username) under the event title banner on /event/[id]
+- Falls back to email local-part if username not set, then @unknown
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- /event/[id] shows @username under title; fallback works when username missing
+
+---

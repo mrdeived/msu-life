@@ -13,7 +13,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
   const baseQueries = [
     prisma.event.findFirst({
       where: { id, isPublished: true },
-      select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, createdAt: true, updatedAt: true },
+      select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, createdAt: true, updatedAt: true, createdBy: { select: { username: true, email: true } } },
     }),
     prisma.eventAttendance.count({ where: { eventId: id } }),
     prisma.eventBookmark.count({ where: { eventId: id } }),
@@ -82,9 +82,14 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             {/* Banner */}
             <div className="relative h-36 bg-gradient-to-br from-msu-red to-msu-red/70 flex items-end">
               <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,.15)_10px,rgba(255,255,255,.15)_20px)]" />
-              <h2 className="relative px-5 pb-4 text-xl font-bold text-msu-white leading-tight drop-shadow-sm">
-                {event.title}
-              </h2>
+              <div className="relative px-5 pb-4">
+                <h2 className="text-xl font-bold text-msu-white leading-tight drop-shadow-sm">
+                  {event.title}
+                </h2>
+                <p className="text-sm text-msu-white/80 mt-1">
+                  @{event.createdBy?.username ?? event.createdBy?.email?.split("@")[0] ?? "unknown"}
+                </p>
+              </div>
             </div>
 
             {/* Meta */}
