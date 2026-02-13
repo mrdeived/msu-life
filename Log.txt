@@ -989,3 +989,27 @@ npx next build
 - Downloaded .ics imports successfully into calendar apps
 
 ---
+
+## Entry 038 — Feature: Create Event (MVP)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added server-protected /events/new form to create Event records (Prisma-backed)
+- Validates title + startAt, optional endAt/location/description
+- Home Quick Action "Create Event" now links to the form
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- New events can be created and appear across feed/calendar/detail; .ics export works
+
+---

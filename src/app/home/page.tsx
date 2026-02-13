@@ -104,15 +104,18 @@ export default async function HomePage() {
             >
               Calendar
             </Link>
-            {["Create Event", "My Profile"].map((label) => (
-              <button
-                key={label}
-                disabled
-                className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
-              >
-                {label}
-              </button>
-            ))}
+            <Link
+              href="/events/new"
+              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+            >
+              Create Event
+            </Link>
+            <button
+              disabled
+              className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+            >
+              My Profile
+            </button>
           </div>
         </section>
       </main>
