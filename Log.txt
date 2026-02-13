@@ -870,3 +870,26 @@ npx next build
 - /feed shows post-style cards and navigation to detail works
 
 ---
+
+## Entry 033 — UI: Feed Social Counters (Efficient Aggregation)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added per-event like/bookmark/attending counters to /feed cards
+- Implemented efficient aggregation via Prisma groupBy (no N+1 queries)
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- /feed shows correct counters matching event interactions
+
+---
