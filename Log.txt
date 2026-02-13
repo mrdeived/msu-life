@@ -1115,3 +1115,31 @@ npx next build
 - Admins manage only their own events; publish/unpublish blocked for other admins' events
 
 ---
+
+## Entry 044 — Admin: Edit Event (Own Events Only)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added admin-only edit page at /admin/events/[id]/edit with ownership enforcement
+- Edit form pre-fills title, description, location, startAt, endAt
+- Server action validates ownership before updating; redirects unauthorized users
+- Added Edit link per event row in /admin dashboard
+- Fixed duplicate requireAdmin() call in admin page
+- Revalidates feed, detail, calendar after update
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Admin can edit own events; changes visible in /feed, /event/[id], /calendar
+- Students and other admins cannot access edit page for events they didn't create
+
+---

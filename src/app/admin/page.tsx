@@ -4,9 +4,9 @@ import { requireAdmin } from "@/lib/requireAdmin";
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminPage() {
-  const { allowed } = await requireAdmin();
+  const { allowed, user: admin } = await requireAdmin();
 
-  if (!allowed) {
+  if (!allowed || !admin) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <header className="bg-msu-red border-b-2 border-msu-green px-4 py-3 flex items-center gap-4">
@@ -22,8 +22,6 @@ export default async function AdminPage() {
       </div>
     );
   }
-
-  const admin = (await requireAdmin()).user!;
 
   const events = await prisma.event.findMany({
     where: { createdById: admin.id },
@@ -91,20 +89,28 @@ export default async function AdminPage() {
                     </div>
                   </div>
 
-                  {/* Action */}
-                  <form action={e.isPublished ? unpublishEvent : publishEvent}>
-                    <input type="hidden" name="eventId" value={e.id} />
-                    <button
-                      type="submit"
-                      className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
-                        e.isPublished
-                          ? "border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                          : "border-msu-green text-msu-green hover:bg-msu-green hover:text-msu-white"
-                      }`}
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/admin/events/${e.id}/edit`}
+                      className="px-3 py-1.5 text-xs font-medium rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
                     >
-                      {e.isPublished ? "Unpublish" : "Publish"}
-                    </button>
-                  </form>
+                      Edit
+                    </Link>
+                    <form action={e.isPublished ? unpublishEvent : publishEvent}>
+                      <input type="hidden" name="eventId" value={e.id} />
+                      <button
+                        type="submit"
+                        className={`px-3 py-1.5 text-xs font-medium rounded-md border transition-colors ${
+                          e.isPublished
+                            ? "border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                            : "border-msu-green text-msu-green hover:bg-msu-green hover:text-msu-white"
+                        }`}
+                      >
+                        {e.isPublished ? "Unpublish" : "Publish"}
+                      </button>
+                    </form>
+                  </div>
                 </div>
               ))}
             </div>
