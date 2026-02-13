@@ -98,6 +98,12 @@ export default async function HomePage() {
             >
               My Events
             </Link>
+            <Link
+              href="/calendar"
+              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+            >
+              Calendar
+            </Link>
             {["Create Event", "My Profile"].map((label) => (
               <button
                 key={label}

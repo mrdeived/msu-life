@@ -941,3 +941,28 @@ npx next build
 - Attending events appear on /my-events and update when toggled
 
 ---
+
+## Entry 036 — UI: Calendar (Month + List)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added server-protected /calendar with Month and List views
+- Month view renders a calendar grid with event pills (links to /event/[id])
+- List view groups events by date for quick browsing
+- Added Home Quick Action link to /calendar
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Calendar renders correctly; navigation to event detail works
+
+---
