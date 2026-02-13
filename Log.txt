@@ -1143,3 +1143,31 @@ npx next build
 - Students and other admins cannot access edit page for events they didn't create
 
 ---
+
+## Entry 045 — Admin UX: Manage Events from My Created Events (No Admin Dashboard)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Removed Admin dashboard UI; /admin now redirects admins to /my-created-events (non-admins see "Not allowed")
+- Removed Admin quick action link from /home
+- Upgraded /my-created-events to admin-only with per-event controls: edit (pencil icon), publish/unpublish, delete (trash icon with confirm)
+- Card body still links to /event/[id]; action row is outside the Link
+- All server actions enforce admin + ownership checks
+- Delete uses cascading deletes (attendance/bookmarks/likes)
+- Added DeleteEventButton client component for confirm dialog
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Admin manages own events from /my-created-events; students only view/interact; feed/calendar update correctly
+
+---
