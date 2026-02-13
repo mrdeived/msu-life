@@ -6,6 +6,10 @@ import LogoutButton from "@/components/LogoutButton";
 export default async function HomePage() {
   const user = await requireAuth();
 
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
+  const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { isAdmin: true } });
+  const showAdmin = dbUser?.isAdmin || adminEmails.includes(user.email.toLowerCase());
+
   const [events, announcements] = await Promise.all([
     prisma.event.findMany({
       where: { isPublished: true, startAt: { gt: new Date() } },
@@ -122,6 +126,14 @@ export default async function HomePage() {
             >
               Create Event
             </Link>
+            {showAdmin && (
+              <Link
+                href="/admin"
+                className="px-4 py-2 text-sm rounded-md border border-msu-green text-msu-green hover:bg-msu-green hover:text-msu-white transition-colors"
+              >
+                Admin
+              </Link>
+            )}
             <button
               disabled
               className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"

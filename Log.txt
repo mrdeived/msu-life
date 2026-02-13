@@ -1063,3 +1063,29 @@ npx next build
 - Creator events list is per-user; existing attending /my-events route unchanged
 
 ---
+
+## Entry 042 — Admin: Dashboard + Publish/Unpublish
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added role-gated /admin dashboard
+- Added User.isAdmin flag (migration)
+- Added requireAdmin helper supporting ADMIN_EMAILS allowlist bootstrap
+- Admin can publish/unpublish events (server actions + revalidate paths)
+
+### Commands
+
+```
+npx prisma migrate dev --name add_user_is_admin
+npx next build
+```
+
+### Verification
+
+- Non-admin blocked; admin can publish/unpublish and feed/calendar reflect changes
+
+---
