@@ -92,6 +92,12 @@ export default async function HomePage() {
             >
               Bookmarks
             </Link>
+            <Link
+              href="/my-events"
+              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+            >
+              My Events
+            </Link>
             {["Create Event", "My Profile"].map((label) => (
               <button
                 key={label}

@@ -917,3 +917,27 @@ npx next build
 - Feed icons toggle interactions without navigating; card click still opens detail
 
 ---
+
+## Entry 035 — UI: My Events (Attending List)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added server-protected /my-events page listing events the user is attending (Prisma-backed)
+- Reused the feed-style post cards and linked to /event/[id]
+- Added Home Quick Action link to /my-events
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Attending events appear on /my-events and update when toggled
+
+---
