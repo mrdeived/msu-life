@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/components/LogoutButton";
@@ -6,10 +5,6 @@ import HomeCalendarSection from "@/components/HomeCalendarSection";
 
 export default async function HomePage() {
   const user = await requireAuth();
-
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
-  const dbUser = await prisma.user.findUnique({ where: { id: user.id }, select: { isAdmin: true } });
-  const showAdmin = dbUser?.isAdmin || adminEmails.includes(user.email.toLowerCase());
 
   const [events, announcements] = await Promise.all([
     prisma.event.findMany({
@@ -80,45 +75,6 @@ export default async function HomePage() {
             )}
           </section>
         </div>
-
-        {/* Quick Actions */}
-        <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
-          <h2 className="text-base font-semibold mb-4">Quick Actions</h2>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/feed"
-              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
-            >
-              Browse Events
-            </Link>
-            <Link
-              href="/my-events"
-              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
-            >
-              My Events
-            </Link>
-            <Link
-              href="/announcements"
-              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
-            >
-              Announcements
-            </Link>
-            {showAdmin && (
-              <Link
-                href="/my-created-events"
-                className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
-              >
-                My Created Events
-              </Link>
-            )}
-            <button
-              disabled
-              className="px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
-            >
-              My Profile
-            </button>
-          </div>
-        </section>
 
         {/* Calendar */}
         <HomeCalendarSection />

@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.uid },
-    select: { id: true, email: true, role: true, isActive: true, isBanned: true },
+    select: { id: true, email: true, role: true, isActive: true, isBanned: true, isAdmin: true },
   });
 
   if (!user || !user.isActive || user.isBanned) {
@@ -20,8 +20,15 @@ export async function GET(request: Request) {
     });
   }
 
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  const isAdmin = user.isAdmin || adminEmails.includes(user.email.toLowerCase());
+
   return Response.json({
     ok: true,
     user: { id: user.id, email: user.email, role: user.role },
+    isAdmin,
   });
 }

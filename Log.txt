@@ -1245,3 +1245,37 @@ npx next build
 - Admin creates events via /my-created-events; home stays student-focused
 
 ---
+
+## Entry 049 — UI: Persistent Bottom Navigation (Instagram-style)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added a global bottom nav bar across authenticated pages (Home/Browse/My Events/Profile)
+- Hidden "My Created Events" tab for non-admin users
+- Removed Quick Actions box from Home
+- Added /profile page with user info and logout
+- Updated /api/auth/me to include isAdmin boolean
+
+### Files Added/Edited
+
+- Added: `src/components/BottomNav.tsx` — client component, fetches /api/auth/me on mount
+- Added: `src/app/profile/page.tsx` — server-protected profile page
+- Edited: `src/app/api/auth/me/route.ts` — added isAdmin field to response
+- Edited: `src/app/layout.tsx` — renders BottomNav globally with pb-28 content padding
+- Edited: `src/app/home/page.tsx` — removed Quick Actions section
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Nav appears on all logged-in pages, hides on login, and reflects admin/non-admin tabs
+
+---
