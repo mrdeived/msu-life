@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
-import AttendButton from "@/components/AttendButton";
-import BookmarkButton from "@/components/BookmarkButton";
-import LikeButton from "@/components/LikeButton";
+import EventActionRow from "@/components/EventActionRow";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth();
@@ -43,65 +41,56 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         <h1 className="text-lg font-bold text-msu-white">Event</h1>
       </header>
 
-      <main className="max-w-3xl mx-auto p-4 sm:p-6">
+      <main className="max-w-lg mx-auto sm:py-6">
         {!event ? (
           <div className="text-center py-12 space-y-3">
             <p className="text-sm text-gray-500 dark:text-gray-400">Event not found.</p>
             <Link href="/feed" className="text-sm text-msu-red hover:underline">&larr; Back to events</Link>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5 sm:p-6 space-y-4">
-            <h2 className="text-xl font-bold text-msu-red">{event.title}</h2>
+          <article className="bg-white dark:bg-gray-900 sm:rounded-lg border-y sm:border border-gray-200 dark:border-gray-800 overflow-hidden">
+            {/* Banner */}
+            <div className="relative h-36 bg-gradient-to-br from-msu-red to-msu-red/70 flex items-end">
+              <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,.15)_10px,rgba(255,255,255,.15)_20px)]" />
+              <h2 className="relative px-5 pb-4 text-xl font-bold text-msu-white leading-tight drop-shadow-sm">
+                {event.title}
+              </h2>
+            </div>
 
-            <dl className="space-y-2 text-sm">
-              <div className="flex gap-2">
-                <dt className="font-medium w-16 shrink-0">Date</dt>
-                <dd className="text-gray-600 dark:text-gray-400">
-                  {event.startAt.toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                </dd>
-              </div>
-              <div className="flex gap-2">
-                <dt className="font-medium w-16 shrink-0">Time</dt>
-                <dd className="text-gray-600 dark:text-gray-400">
-                  {event.startAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  {event.endAt && (
-                    <> – {event.endAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</>
-                  )}
-                </dd>
-              </div>
-              {event.location && (
-                <div className="flex gap-2">
-                  <dt className="font-medium w-16 shrink-0">Place</dt>
-                  <dd className="text-gray-600 dark:text-gray-400">{event.location}</dd>
-                </div>
-              )}
-            </dl>
+            {/* Meta */}
+            <div className="px-5 py-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
+              <span>
+                {event.startAt.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+              </span>
+              <span>
+                {event.startAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {event.endAt && ` – ${event.endAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+              </span>
+              {event.location && <span>{event.location}</span>}
+            </div>
 
+            {/* Action Row */}
+            <div className="border-b border-gray-100 dark:border-gray-800">
+              <EventActionRow
+                eventId={event.id}
+                initialLiked={isLiked}
+                initialBookmarked={isBookmarked}
+                initialAttending={isAttending}
+                likeCount={likeCount}
+                bookmarkCount={bookmarkCount}
+                attendeeCount={attendeeCount}
+              />
+            </div>
+
+            {/* Description */}
             {event.description && (
-              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">{event.description}</p>
+              <div className="px-5 py-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                  {event.description}
+                </p>
+              </div>
             )}
-
-            <div className="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-800">
-              <AttendButton eventId={event.id} initialAttending={isAttending} />
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {attendeeCount} attending
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-800">
-              <BookmarkButton eventId={event.id} initialBookmarked={isBookmarked} />
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {bookmarkCount} bookmarked
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-800">
-              <LikeButton eventId={event.id} initialLiked={isLiked} />
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {likeCount} {likeCount === 1 ? "like" : "likes"}
-              </span>
-            </div>
-          </div>
+          </article>
         )}
       </main>
     </div>

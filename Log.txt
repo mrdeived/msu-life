@@ -821,3 +821,28 @@ npx next build
 - Logged-in user can like/unlike an event and like count updates
 
 ---
+
+## Entry 031 — UI: Instagram-style Event Detail + Unified Action Row
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added reusable EventActionRow with icon buttons for Like/Bookmark/Attend using existing APIs
+- Updated /event/[id] to use a single unified action row with counts
+- Refined event detail layout to a post-style presentation (banner + meta + content)
+
+### Commands
+
+```
+npm install lucide-react
+npx next build
+```
+
+### Verification
+
+- All three toggles work and counts update; UI is cleaner and more "feed/post" styled
+
+---
