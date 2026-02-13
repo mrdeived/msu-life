@@ -846,3 +846,27 @@ npx next build
 - All three toggles work and counts update; UI is cleaner and more "feed/post" styled
 
 ---
+
+## Entry 032 — UI: Instagram-style Feed Cards
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Updated /feed event list to Instagram-style post cards (banner + meta + snippet)
+- Preserved server-side auth protection and existing Prisma query
+- Cards link to /event/[id] for full details
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- /feed shows post-style cards and navigation to detail works
+
+---
