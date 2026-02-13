@@ -1089,3 +1089,29 @@ npx next build
 - Non-admin blocked; admin can publish/unpublish and feed/calendar reflect changes
 
 ---
+
+## Entry 043 — Permissions: Admin-only Create + Own-Event Admin Scope
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Restricted event creation (/events/new) to admins only (ADMIN_EMAILS or isAdmin) with both page-level and server action guards
+- Scoped /admin event list to events created by the current admin only (createdById filter)
+- Enforced ownership checks for publish/unpublish server actions (admin can only manage own events)
+- Hid Create Event, My Created Events, and Admin links for non-admin users on /home
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Students can only view/interact (like/bookmark/attend/ics/share); cannot access /admin or /events/new
+- Admins manage only their own events; publish/unpublish blocked for other admins' events
+
+---

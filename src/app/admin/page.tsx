@@ -23,7 +23,10 @@ export default async function AdminPage() {
     );
   }
 
+  const admin = (await requireAdmin()).user!;
+
   const events = await prisma.event.findMany({
+    where: { createdById: admin.id },
     orderBy: [{ isPublished: "desc" }, { startAt: "asc" }],
     select: {
       id: true,
@@ -48,7 +51,7 @@ export default async function AdminPage() {
         <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              All Events ({events.length})
+              My Events ({events.length})
             </h2>
           </div>
 
@@ -119,11 +122,14 @@ async function publishEvent(formData: FormData) {
   const { prisma: db } = await import("@/lib/prisma");
   const { revalidatePath: revalidate } = await import("next/cache");
 
-  const { allowed } = await requireAdminServer();
-  if (!allowed) return;
+  const { allowed, user: adminUser } = await requireAdminServer();
+  if (!allowed || !adminUser) return;
 
   const eventId = formData.get("eventId") as string;
   if (!eventId) return;
+
+  const event = await db.event.findUnique({ where: { id: eventId }, select: { createdById: true } });
+  if (!event || event.createdById !== adminUser.id) return;
 
   await db.event.update({ where: { id: eventId }, data: { isPublished: true } });
 
@@ -140,11 +146,14 @@ async function unpublishEvent(formData: FormData) {
   const { prisma: db } = await import("@/lib/prisma");
   const { revalidatePath: revalidate } = await import("next/cache");
 
-  const { allowed } = await requireAdminServer();
-  if (!allowed) return;
+  const { allowed, user: adminUser } = await requireAdminServer();
+  if (!allowed || !adminUser) return;
 
   const eventId = formData.get("eventId") as string;
   if (!eventId) return;
+
+  const event = await db.event.findUnique({ where: { id: eventId }, select: { createdById: true } });
+  if (!event || event.createdById !== adminUser.id) return;
 
   await db.event.update({ where: { id: eventId }, data: { isPublished: false } });
 
