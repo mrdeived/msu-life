@@ -28,6 +28,7 @@ model User {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   attendances EventAttendance[]
+  bookmarks   EventBookmark[]
 }
 
 model EmailOtp {
@@ -52,6 +53,7 @@ model Event {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
   attendances EventAttendance[]
+  bookmarks   EventBookmark[]
 
   @@index([startAt])
   @@index([isPublished])
@@ -69,6 +71,20 @@ model Announcement {
 }
 
 model EventAttendance {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+model EventBookmark {
   id        String   @id @default(cuid())
   userId    String
   eventId   String

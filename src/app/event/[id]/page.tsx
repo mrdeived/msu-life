@@ -2,13 +2,14 @@ import Link from "next/link";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
 import AttendButton from "@/components/AttendButton";
+import BookmarkButton from "@/components/BookmarkButton";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth();
 
   const { id } = await params;
 
-  const [event, attendeeCount, attendance] = await Promise.all([
+  const [event, attendeeCount, attendance, bookmarkCount, bookmark] = await Promise.all([
     prisma.event.findFirst({
       where: { id, isPublished: true },
       select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, createdAt: true, updatedAt: true },
@@ -18,9 +19,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
       where: { userId_eventId: { userId: user.id, eventId: id } },
       select: { id: true },
     }),
+    prisma.eventBookmark.count({ where: { eventId: id } }),
+    prisma.eventBookmark.findUnique({
+      where: { userId_eventId: { userId: user.id, eventId: id } },
+      select: { id: true },
+    }),
   ]);
 
   const isAttending = !!attendance;
+  const isBookmarked = !!bookmark;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -71,6 +78,13 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               <AttendButton eventId={event.id} initialAttending={isAttending} />
               <span className="text-sm text-gray-500 dark:text-gray-400">
                 {attendeeCount} attending
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2 border-t border-gray-200 dark:border-gray-800">
+              <BookmarkButton eventId={event.id} initialBookmarked={isBookmarked} />
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {bookmarkCount} bookmarked
               </span>
             </div>
           </div>

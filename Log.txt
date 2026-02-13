@@ -747,3 +747,28 @@ npx next build
 - Logged-in user can attend/unattend an event and attendee count updates
 
 ---
+
+## Entry 028 — Feature: Event Bookmarks (Save/Unsave)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added EventBookmark model with unique (userId, eventId)
+- Implemented bookmark/unbookmark API routes for events
+- Updated /event/[id] to show bookmark count and toggle button
+
+### Commands
+
+```
+npx prisma migrate dev --name add_event_bookmarks
+npx next build
+```
+
+### Verification
+
+- Logged-in user can bookmark/unbookmark an event and count updates
+
+---
