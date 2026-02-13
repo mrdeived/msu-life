@@ -1315,3 +1315,31 @@ npx next build
 - Users see stable display name; profile edits persist; existing accounts unaffected
 
 ---
+
+## Entry 051 — Feature: Attendee List (Event Detail)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added attendee list section on /event/[id] visible to logged-in users
+- Attendees display using computeDisplayName (first/last fallback)
+- No emails exposed; capped list at 50 for performance
+
+### Files Edited
+
+- `src/app/event/[id]/page.tsx` — added attendee query + UI section
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Attendee list appears for events with attendance records and respects displayName rules
+
+---

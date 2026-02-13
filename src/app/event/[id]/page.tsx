@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
+import { computeDisplayName } from "@/lib/deriveNames";
 import EventActionRow from "@/components/EventActionRow";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -8,7 +9,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
 
   const { id } = await params;
 
-  const [event, attendeeCount, attendance, bookmarkCount, bookmark, likeCount, like] = await Promise.all([
+  const [event, attendeeCount, attendance, bookmarkCount, bookmark, likeCount, like, attendees] = await Promise.all([
     prisma.event.findFirst({
       where: { id, isPublished: true },
       select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, createdAt: true, updatedAt: true },
@@ -27,6 +28,12 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     prisma.eventLike.findUnique({
       where: { userId_eventId: { userId: user.id, eventId: id } },
       select: { id: true },
+    }),
+    prisma.eventAttendance.findMany({
+      where: { eventId: id },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: { user: { select: { firstName: true, lastName: true, email: true } } },
     }),
   ]);
 
@@ -80,6 +87,35 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 bookmarkCount={bookmarkCount}
                 attendeeCount={attendeeCount}
               />
+            </div>
+
+            {/* Attendees */}
+            <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h3 className="text-sm font-semibold text-msu-red mb-3">
+                Attendees{attendeeCount > 0 && <span className="text-gray-400 dark:text-gray-500 font-normal"> ({attendeeCount})</span>}
+              </h3>
+              {attendeeCount === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No attendees yet.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {attendees.map((a, i) => {
+                    const name = computeDisplayName(a.user.firstName, a.user.lastName, a.user.email);
+                    return (
+                      <li key={i} className="flex items-center gap-2.5">
+                        <div className="h-7 w-7 rounded-full bg-msu-red/10 text-msu-red flex items-center justify-center text-xs font-bold shrink-0">
+                          {name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
+                      </li>
+                    );
+                  })}
+                  {attendeeCount > 50 && (
+                    <li className="text-xs text-gray-400 dark:text-gray-500 pl-9">
+                      +{attendeeCount - 50} more
+                    </li>
+                  )}
+                </ul>
+              )}
             </div>
 
             {/* Add to Calendar */}
