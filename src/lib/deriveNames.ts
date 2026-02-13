@@ -30,16 +30,43 @@ export function deriveNamesFromEmail(email: string): {
 
 /**
  * Compute a display name from user fields, with email fallback.
+ * Priority: @username > First Last > First > email local-part > "Student"
  */
 export function computeDisplayName(
   firstName: string | null | undefined,
   lastName: string | null | undefined,
   email: string,
+  username?: string | null,
 ): string {
+  if (username) return `@${username}`;
   const first = firstName?.trim();
   const last = lastName?.trim();
   if (first && last) return `${first} ${last}`;
   if (first) return first;
   const localPart = email.split("@")[0];
   return localPart || "Student";
+}
+
+/**
+ * Derive a username from an ndus.edu email local-part.
+ * Lowercase, replace invalid chars with _, trim underscores, 3–20 chars.
+ */
+export function deriveUsernameFromEmail(email: string): string | null {
+  const localPart = email.split("@")[0]?.toLowerCase() ?? "";
+  const cleaned = localPart
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_{2,}/g, "_")
+    .replace(/^_+|_+$/g, "");
+  if (cleaned.length < 3) return null;
+  return cleaned.slice(0, 20);
+}
+
+/**
+ * Normalize a user-provided username.
+ * Lowercase, allow only a-z 0-9 _, 3–20 chars. Returns null if invalid.
+ */
+export function normalizeUsername(input: string): string | null {
+  const normalized = input.toLowerCase().replace(/[^a-z0-9_]/g, "");
+  if (normalized.length < 3 || normalized.length > 20) return null;
+  return normalized;
 }

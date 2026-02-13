@@ -1391,3 +1391,29 @@ npx next build
 - No logout button on /home
 
 ---
+
+## Entry 054 — Accounts: Username Handle (Unique) + Profile Editor
+
+**Date:** 2026-02-12
+
+### Summary
+
+- Added optional unique `username` field to User (Prisma + migration)
+- Auto-derives username from ndus.edu email on user creation (no overwrite)
+- `/profile` supports editing username with validation + uniqueness checks
+- `/api/auth/me` returns `username` and `displayName` now prefers `@username`
+- Added `deriveUsernameFromEmail` and `normalizeUsername` helpers
+- TODO V1.1: Surface "by @username" on feed cards / event detail (Event already has `createdById` relation)
+
+### Commands
+
+```
+npx prisma migrate dev --name add_user_username
+npx next build
+```
+
+### Verification
+
+- Username persists, is unique, editable, and displayName prefers @username
+
+---

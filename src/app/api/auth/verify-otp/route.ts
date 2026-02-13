@@ -2,9 +2,22 @@ import { prisma } from "@/lib/prisma";
 import { verifyOtpSchema } from "@/lib/validation";
 import { hashOtp } from "@/lib/otp";
 import { signSession, sessionCookieHeader } from "@/lib/session";
-import { deriveNamesFromEmail } from "@/lib/deriveNames";
+import { deriveNamesFromEmail, deriveUsernameFromEmail } from "@/lib/deriveNames";
 
 const ALLOWED_DOMAIN = (process.env.ALLOWED_EMAIL_DOMAIN ?? "ndus.edu").toLowerCase();
+
+/** Try derived username, then with numeric suffixes, then give up. */
+async function findAvailableUsername(base: string | null): Promise<string | null> {
+  if (!base) return null;
+  const existing = await prisma.user.findUnique({ where: { username: base }, select: { id: true } });
+  if (!existing) return base;
+  for (let i = 2; i <= 9; i++) {
+    const candidate = `${base.slice(0, 18)}_${i}`;
+    const taken = await prisma.user.findUnique({ where: { username: candidate }, select: { id: true } });
+    if (!taken) return candidate;
+  }
+  return null;
+}
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -30,10 +43,19 @@ export async function POST(request: Request) {
 
   if (demoBypassEnabled && code === "000000") {
     const derived = deriveNamesFromEmail(email);
+    const derivedUsername = await findAvailableUsername(deriveUsernameFromEmail(email));
     const user = await prisma.user.upsert({
       where: { email },
       update: {},
-      create: { email, role: "STUDENT", isActive: true, isBanned: false, firstName: derived.firstName, lastName: derived.lastName },
+      create: {
+        email,
+        role: "STUDENT",
+        isActive: true,
+        isBanned: false,
+        firstName: derived.firstName,
+        lastName: derived.lastName,
+        username: derivedUsername,
+      },
       select: { id: true, email: true, role: true },
     });
 
@@ -71,6 +93,8 @@ export async function POST(request: Request) {
     }
 
     const names = deriveNamesFromEmail(email);
+    // Note: findAvailableUsername uses prisma (not tx) but that's fine for username derivation
+    const derivedUsername = await findAvailableUsername(deriveUsernameFromEmail(email));
     return tx.user.upsert({
       where: { email },
       update: {},
@@ -81,6 +105,7 @@ export async function POST(request: Request) {
         isBanned: false,
         firstName: names.firstName,
         lastName: names.lastName,
+        username: derivedUsername,
       },
       select: { id: true, email: true, role: true },
     });

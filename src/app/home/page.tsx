@@ -11,9 +11,9 @@ export default async function HomePage() {
   if (user) {
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { firstName: true, lastName: true },
+      select: { firstName: true, lastName: true, username: true },
     });
-    displayName = computeDisplayName(dbUser?.firstName ?? null, dbUser?.lastName ?? null, user.email);
+    displayName = computeDisplayName(dbUser?.firstName ?? null, dbUser?.lastName ?? null, user.email, dbUser?.username);
   }
 
   const [events, announcements] = await Promise.all([

@@ -22,7 +22,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
 
   let event, attendeeCount: number, bookmarkCount: number, likeCount: number;
   let isAttending = false, isBookmarked = false, isLiked = false;
-  let attendees: { user: { firstName: string | null; lastName: string | null; email: string } }[] = [];
+  let attendees: { user: { firstName: string | null; lastName: string | null; email: string; username: string | null } }[] = [];
 
   if (user) {
     const [ev, attCount, bmCount, lkCount, attendance, bookmark, like, atts] = await Promise.all([
@@ -43,7 +43,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         where: { eventId: id },
         orderBy: { createdAt: "desc" },
         take: 50,
-        select: { user: { select: { firstName: true, lastName: true, email: true } } },
+        select: { user: { select: { firstName: true, lastName: true, email: true, username: true } } },
       }),
     ]);
 
@@ -127,7 +127,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               ) : (
                 <ul className="space-y-2">
                   {attendees.map((a, i) => {
-                    const name = computeDisplayName(a.user.firstName, a.user.lastName, a.user.email);
+                    const name = computeDisplayName(a.user.firstName, a.user.lastName, a.user.email, a.user.username);
                     return (
                       <li key={i} className="flex items-center gap-2.5">
                         <div className="h-7 w-7 rounded-full bg-msu-red/10 text-msu-red flex items-center justify-center text-xs font-bold shrink-0">
