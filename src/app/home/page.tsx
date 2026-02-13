@@ -105,6 +105,12 @@ export default async function HomePage() {
               Calendar
             </Link>
             <Link
+              href="/announcements"
+              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+            >
+              Announcements
+            </Link>
+            <Link
               href="/events/new"
               className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
             >

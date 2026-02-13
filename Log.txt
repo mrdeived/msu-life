@@ -1013,3 +1013,27 @@ npx next build
 - New events can be created and appear across feed/calendar/detail; .ics export works
 
 ---
+
+## Entry 040 — UI: Announcements List + Detail
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added /announcements list page (active announcements, ordered by newest first)
+- Added /announcements/[id] detail page (full title, body, date)
+- Added Home Quick Action link to /announcements
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Announcements list renders and links to detail
+
+---
