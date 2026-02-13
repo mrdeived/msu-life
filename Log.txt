@@ -1171,3 +1171,28 @@ npx next build
 - Admin manages own events from /my-created-events; students only view/interact; feed/calendar update correctly
 
 ---
+
+## Entry 046 — UI: Calendar Embedded in Home (Calendar page deprecated)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Extracted calendar UI into reusable HomeCalendarSection server component
+- Embedded calendar section into /home with same features as prior /calendar (month nav, list view toggle, event click)
+- Removed Calendar quick action link from /home
+- /calendar now redirects authenticated users to /home (preserves deep links)
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Home includes working calendar; /calendar redirects safely
+
+---

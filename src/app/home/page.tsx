@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/components/LogoutButton";
+import HomeCalendarSection from "@/components/HomeCalendarSection";
 
 export default async function HomePage() {
   const user = await requireAuth();
@@ -103,12 +104,6 @@ export default async function HomePage() {
               My Events
             </Link>
             <Link
-              href="/calendar"
-              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
-            >
-              Calendar
-            </Link>
-            <Link
               href="/announcements"
               className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
             >
@@ -138,6 +133,9 @@ export default async function HomePage() {
             </button>
           </div>
         </section>
+
+        {/* Calendar */}
+        <HomeCalendarSection />
       </main>
     </div>
   );
