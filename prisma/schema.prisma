@@ -29,6 +29,7 @@ model User {
   updatedAt   DateTime          @updatedAt
   attendances EventAttendance[]
   bookmarks   EventBookmark[]
+  likes       EventLike[]
 }
 
 model EmailOtp {
@@ -54,6 +55,7 @@ model Event {
   updatedAt   DateTime          @updatedAt
   attendances EventAttendance[]
   bookmarks   EventBookmark[]
+  likes       EventLike[]
 
   @@index([startAt])
   @@index([isPublished])
@@ -85,6 +87,20 @@ model EventAttendance {
 }
 
 model EventBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+model EventLike {
   id        String   @id @default(cuid())
   userId    String
   eventId   String

@@ -796,3 +796,28 @@ npx next build
 - Bookmarked events appear on /bookmarks and update when toggled
 
 ---
+
+## Entry 030 — Feature: Event Likes (Like/Unlike)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added EventLike model with unique (userId, eventId)
+- Implemented like/unlike API route for events
+- Updated /event/[id] to show like count and toggle button
+
+### Commands
+
+```
+npx prisma migrate dev --name add_event_likes
+npx next build
+```
+
+### Verification
+
+- Logged-in user can like/unlike an event and like count updates
+
+---
