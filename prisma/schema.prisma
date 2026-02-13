@@ -27,9 +27,10 @@ model User {
   isBanned    Boolean           @default(false)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  attendances EventAttendance[]
-  bookmarks   EventBookmark[]
-  likes       EventLike[]
+  attendances   EventAttendance[]
+  bookmarks     EventBookmark[]
+  likes         EventLike[]
+  createdEvents Event[]
 }
 
 model EmailOtp {
@@ -51,14 +52,17 @@ model Event {
   startAt     DateTime
   endAt       DateTime?
   isPublished Boolean           @default(true)
+  createdById String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
+  createdBy   User?             @relation(fields: [createdById], references: [id], onDelete: Cascade)
   attendances EventAttendance[]
   bookmarks   EventBookmark[]
   likes       EventLike[]
 
   @@index([startAt])
   @@index([isPublished])
+  @@index([createdById])
 }
 
 model Announcement {

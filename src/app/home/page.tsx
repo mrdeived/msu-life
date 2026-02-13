@@ -111,6 +111,12 @@ export default async function HomePage() {
               Announcements
             </Link>
             <Link
+              href="/my-created-events"
+              className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+            >
+              My Created Events
+            </Link>
+            <Link
               href="/events/new"
               className="px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
             >

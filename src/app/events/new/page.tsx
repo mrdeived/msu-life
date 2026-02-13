@@ -125,7 +125,7 @@ async function createEvent(formData: FormData) {
   const { prisma: db } = await import("@/lib/prisma");
   const { redirect: redirectServer } = await import("next/navigation");
 
-  await requireAuthServer();
+  const user = await requireAuthServer();
 
   const title = (formData.get("title") as string | null)?.trim();
   const location = (formData.get("location") as string | null)?.trim() || null;
@@ -168,6 +168,7 @@ async function createEvent(formData: FormData) {
       startAt,
       endAt,
       isPublished: true,
+      createdById: user.id,
     },
     select: { id: true },
   });

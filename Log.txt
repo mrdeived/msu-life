@@ -1037,3 +1037,29 @@ npx next build
 - Announcements list renders and links to detail
 
 ---
+
+## Entry 041 — Feature: Event Creator Tracking + My Created Events
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added createdById + createdBy relation to Event and createdEvents relation on User
+- Updated Create Event to store the creator (createdById)
+- Added /my-created-events page listing events created by the current user
+- Added Home Quick Action link to /my-created-events
+
+### Commands
+
+```
+npx prisma migrate dev --name add_event_creator
+npx next build
+```
+
+### Verification
+
+- Creator events list is per-user; existing attending /my-events route unchanged
+
+---
