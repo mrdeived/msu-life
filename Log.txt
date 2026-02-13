@@ -1343,3 +1343,26 @@ npx next build
 - Attendee list appears for events with attendance records and respects displayName rules
 
 ---
+
+## Entry 052 — UX: Guest Mode + Login-gated Interactions
+
+**Date:** 2026-02-12
+
+### Summary
+
+- Enabled read-only browsing for guests (Home/Feed/Event Detail)
+- Bottom nav now supports guest tabs (Home/Browse/Login)
+- Like/Bookmark/Attend gated behind login with modal prompt
+- Attendee list hidden for guests
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Guests can browse but cannot interact; logged-in users retain full functionality
+
+---

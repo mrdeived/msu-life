@@ -1,45 +1,68 @@
 import Link from "next/link";
-import { requireAuth } from "@/lib/requireAuth";
+import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
 import EventActionRow from "@/components/EventActionRow";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const user = await requireAuth();
+  const user = await optionalAuth();
 
   const { id } = await params;
 
-  const [event, attendeeCount, attendance, bookmarkCount, bookmark, likeCount, like, attendees] = await Promise.all([
+  // Always fetch event + counts; only fetch user-specific data if logged in
+  const baseQueries = [
     prisma.event.findFirst({
       where: { id, isPublished: true },
       select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, createdAt: true, updatedAt: true },
     }),
     prisma.eventAttendance.count({ where: { eventId: id } }),
-    prisma.eventAttendance.findUnique({
-      where: { userId_eventId: { userId: user.id, eventId: id } },
-      select: { id: true },
-    }),
     prisma.eventBookmark.count({ where: { eventId: id } }),
-    prisma.eventBookmark.findUnique({
-      where: { userId_eventId: { userId: user.id, eventId: id } },
-      select: { id: true },
-    }),
     prisma.eventLike.count({ where: { eventId: id } }),
-    prisma.eventLike.findUnique({
-      where: { userId_eventId: { userId: user.id, eventId: id } },
-      select: { id: true },
-    }),
-    prisma.eventAttendance.findMany({
-      where: { eventId: id },
-      orderBy: { createdAt: "desc" },
-      take: 50,
-      select: { user: { select: { firstName: true, lastName: true, email: true } } },
-    }),
-  ]);
+  ] as const;
 
-  const isAttending = !!attendance;
-  const isBookmarked = !!bookmark;
-  const isLiked = !!like;
+  let event, attendeeCount: number, bookmarkCount: number, likeCount: number;
+  let isAttending = false, isBookmarked = false, isLiked = false;
+  let attendees: { user: { firstName: string | null; lastName: string | null; email: string } }[] = [];
+
+  if (user) {
+    const [ev, attCount, bmCount, lkCount, attendance, bookmark, like, atts] = await Promise.all([
+      ...baseQueries,
+      prisma.eventAttendance.findUnique({
+        where: { userId_eventId: { userId: user.id, eventId: id } },
+        select: { id: true },
+      }),
+      prisma.eventBookmark.findUnique({
+        where: { userId_eventId: { userId: user.id, eventId: id } },
+        select: { id: true },
+      }),
+      prisma.eventLike.findUnique({
+        where: { userId_eventId: { userId: user.id, eventId: id } },
+        select: { id: true },
+      }),
+      prisma.eventAttendance.findMany({
+        where: { eventId: id },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: { user: { select: { firstName: true, lastName: true, email: true } } },
+      }),
+    ]);
+
+    event = ev;
+    attendeeCount = attCount;
+    bookmarkCount = bmCount;
+    likeCount = lkCount;
+    isAttending = !!attendance;
+    isBookmarked = !!bookmark;
+    isLiked = !!like;
+    attendees = atts;
+  } else {
+    const [ev, attCount, bmCount, lkCount] = await Promise.all(baseQueries);
+
+    event = ev;
+    attendeeCount = attCount;
+    bookmarkCount = bmCount;
+    likeCount = lkCount;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -80,6 +103,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
             <div className="border-b border-gray-100 dark:border-gray-800">
               <EventActionRow
                 eventId={event.id}
+                isGuest={!user}
                 initialLiked={isLiked}
                 initialBookmarked={isBookmarked}
                 initialAttending={isAttending}
@@ -94,7 +118,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               <h3 className="text-sm font-semibold text-msu-red mb-3">
                 Attendees{attendeeCount > 0 && <span className="text-gray-400 dark:text-gray-500 font-normal"> ({attendeeCount})</span>}
               </h3>
-              {attendeeCount === 0 ? (
+              {!user ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <Link href="/login" className="text-msu-red hover:underline">Log in</Link> to see attendees.
+                </p>
+              ) : attendeeCount === 0 ? (
                 <p className="text-sm text-gray-500 dark:text-gray-400">No attendees yet.</p>
               ) : (
                 <ul className="space-y-2">

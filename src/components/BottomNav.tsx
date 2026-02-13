@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Newspaper, CalendarCheck, SquarePen, User } from "lucide-react";
+import { Home, Newspaper, CalendarCheck, SquarePen, User, LogIn } from "lucide-react";
 
 interface NavItem {
   href: string;
@@ -12,7 +12,7 @@ interface NavItem {
   adminOnly?: boolean;
 }
 
-const items: NavItem[] = [
+const authedItems: NavItem[] = [
   { href: "/home", label: "Home", icon: <Home size={22} /> },
   { href: "/feed", label: "Browse", icon: <Newspaper size={22} /> },
   { href: "/my-events", label: "My Events", icon: <CalendarCheck size={22} /> },
@@ -20,10 +20,16 @@ const items: NavItem[] = [
   { href: "/profile", label: "Profile", icon: <User size={22} /> },
 ];
 
+const guestItems: NavItem[] = [
+  { href: "/home", label: "Home", icon: <Home size={22} /> },
+  { href: "/feed", label: "Browse", icon: <Newspaper size={22} /> },
+  { href: "/login", label: "Login", icon: <LogIn size={22} /> },
+];
+
 export default function BottomNav() {
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [authed, setAuthed] = useState(false);
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,18 +40,26 @@ export default function BottomNav() {
       })
       .then((data) => {
         if (cancelled) return;
-        setAuthed(true);
+        setIsAuthed(true);
         setIsAdmin(!!data.isAdmin);
       })
       .catch(() => {
-        if (!cancelled) setAuthed(false);
+        if (!cancelled) setIsAuthed(false);
       });
     return () => { cancelled = true; };
   }, []);
 
-  if (!authed) return null;
+  // Hide on auth pages
+  if (pathname.startsWith("/login") || pathname.startsWith("/verify") || pathname.startsWith("/api")) {
+    return null;
+  }
 
-  const visible = items.filter((i) => !i.adminOnly || isAdmin);
+  // Wait for auth check
+  if (isAuthed === null) return null;
+
+  const items = isAuthed
+    ? authedItems.filter((i) => !i.adminOnly || isAdmin)
+    : guestItems;
 
   return (
     <nav
@@ -57,7 +71,7 @@ export default function BottomNav() {
         transition-shadow hover:shadow-xl"
       aria-label="Main navigation"
     >
-      {visible.map((item) => {
+      {items.map((item) => {
         const active = pathname === item.href || pathname.startsWith(item.href + "/");
         return (
           <Link

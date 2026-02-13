@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { requireAuth } from "@/lib/requireAuth";
+import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import FeedActionRow from "@/components/FeedActionRow";
 
 export default async function FeedPage() {
-  const user = await requireAuth();
+  const user = await optionalAuth();
 
   const events = await prisma.event.findMany({
     where: { isPublished: true, startAt: { gt: new Date() } },
@@ -23,7 +23,7 @@ export default async function FeedPage() {
   if (events.length > 0) {
     const eventIds = events.map((e) => e.id);
 
-    const [likeCounts, bookmarkCounts, attendanceCounts, userLikes, userBookmarks, userAttendances] = await Promise.all([
+    const countQueries = [
       prisma.eventLike.groupBy({
         by: ["eventId"],
         where: { eventId: { in: eventIds } },
@@ -39,26 +39,38 @@ export default async function FeedPage() {
         where: { eventId: { in: eventIds } },
         _count: { _all: true },
       }),
-      prisma.eventLike.findMany({
-        where: { userId: user.id, eventId: { in: eventIds } },
-        select: { eventId: true },
-      }),
-      prisma.eventBookmark.findMany({
-        where: { userId: user.id, eventId: { in: eventIds } },
-        select: { eventId: true },
-      }),
-      prisma.eventAttendance.findMany({
-        where: { userId: user.id, eventId: { in: eventIds } },
-        select: { eventId: true },
-      }),
-    ]);
+    ] as const;
 
-    likesById = new Map(likeCounts.map((x) => [x.eventId, x._count._all]));
-    bookmarksById = new Map(bookmarkCounts.map((x) => [x.eventId, x._count._all]));
-    attendanceById = new Map(attendanceCounts.map((x) => [x.eventId, x._count._all]));
-    userLikedIds = new Set(userLikes.map((x) => x.eventId));
-    userBookmarkedIds = new Set(userBookmarks.map((x) => x.eventId));
-    userAttendingIds = new Set(userAttendances.map((x) => x.eventId));
+    if (user) {
+      const [likeCounts, bookmarkCounts, attendanceCounts, userLikes, userBookmarks, userAttendances] = await Promise.all([
+        ...countQueries,
+        prisma.eventLike.findMany({
+          where: { userId: user.id, eventId: { in: eventIds } },
+          select: { eventId: true },
+        }),
+        prisma.eventBookmark.findMany({
+          where: { userId: user.id, eventId: { in: eventIds } },
+          select: { eventId: true },
+        }),
+        prisma.eventAttendance.findMany({
+          where: { userId: user.id, eventId: { in: eventIds } },
+          select: { eventId: true },
+        }),
+      ]);
+
+      likesById = new Map(likeCounts.map((x) => [x.eventId, x._count._all]));
+      bookmarksById = new Map(bookmarkCounts.map((x) => [x.eventId, x._count._all]));
+      attendanceById = new Map(attendanceCounts.map((x) => [x.eventId, x._count._all]));
+      userLikedIds = new Set(userLikes.map((x) => x.eventId));
+      userBookmarkedIds = new Set(userBookmarks.map((x) => x.eventId));
+      userAttendingIds = new Set(userAttendances.map((x) => x.eventId));
+    } else {
+      const [likeCounts, bookmarkCounts, attendanceCounts] = await Promise.all(countQueries);
+
+      likesById = new Map(likeCounts.map((x) => [x.eventId, x._count._all]));
+      bookmarksById = new Map(bookmarkCounts.map((x) => [x.eventId, x._count._all]));
+      attendanceById = new Map(attendanceCounts.map((x) => [x.eventId, x._count._all]));
+    }
   }
 
   return (
@@ -115,6 +127,7 @@ export default async function FeedPage() {
               {/* Action Row */}
               <FeedActionRow
                 eventId={e.id}
+                isGuest={!user}
                 initialLiked={userLikedIds.has(e.id)}
                 initialBookmarked={userBookmarkedIds.has(e.id)}
                 initialAttending={userAttendingIds.has(e.id)}
