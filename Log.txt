@@ -772,3 +772,27 @@ npx next build
 - Logged-in user can bookmark/unbookmark an event and count updates
 
 ---
+
+## Entry 029 — UI: Bookmarks Page (DB-backed)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added server-protected /bookmarks page that lists the current user's bookmarked events from Prisma
+- Implemented MSU-branded card UI with links to /event/[id]
+- Added Home Quick Action link to /bookmarks
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Bookmarked events appear on /bookmarks and update when toggled
+
+---
