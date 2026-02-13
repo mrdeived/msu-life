@@ -966,3 +966,26 @@ npx next build
 - Calendar renders correctly; navigation to event detail works
 
 ---
+
+## Entry 037 — Feature: Add to Calendar (.ics Export)
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added /api/events/[id]/ics route generating an iCalendar (.ics) file from DB event data
+- Added "Add to Calendar" button on /event/[id]
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Downloaded .ics imports successfully into calendar apps
+
+---

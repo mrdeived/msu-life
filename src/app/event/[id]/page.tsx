@@ -82,6 +82,17 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               />
             </div>
 
+            {/* Add to Calendar */}
+            <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800">
+              <a
+                href={`/api/events/${event.id}/ics`}
+                download
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+              >
+                Add to Calendar
+              </a>
+            </div>
+
             {/* Description */}
             {event.description && (
               <div className="px-5 py-4">
