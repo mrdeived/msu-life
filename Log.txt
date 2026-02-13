@@ -1366,3 +1366,28 @@ npx next build
 - Guests can browse but cannot interact; logged-in users retain full functionality
 
 ---
+
+## Entry 053 — Events: Attendee List (Logged-in Only) + Nav on Login + Home Logout Removed
+
+**Date:** 2026-02-12
+
+### Summary
+
+- Added attendee list to /event/[id] visible only to authenticated users
+- Guests see a login prompt instead of attendee data
+- Bottom nav now renders on /login (still hidden on OTP verify pages)
+- Removed Logout button from Home (logout remains on Profile)
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Logged-in users can see attendee list; guests cannot
+- Nav visible on /login
+- No logout button on /home
+
+---

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
-import LogoutButton from "@/components/LogoutButton";
 import HomeCalendarSection from "@/components/HomeCalendarSection";
 
 export default async function HomePage() {
@@ -39,10 +38,7 @@ export default async function HomePage() {
         <h1 className="text-lg font-bold text-msu-white">MSU Life</h1>
         <div className="flex items-center gap-3">
           {user ? (
-            <>
-              <span className="text-sm text-msu-white/80 hidden sm:inline">Hi, {displayName}</span>
-              <LogoutButton />
-            </>
+            <span className="text-sm text-msu-white/80 hidden sm:inline">Hi, {displayName}</span>
           ) : (
             <Link
               href="/login"

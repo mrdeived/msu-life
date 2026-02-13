@@ -49,8 +49,8 @@ export default function BottomNav() {
     return () => { cancelled = true; };
   }, []);
 
-  // Hide on auth pages
-  if (pathname.startsWith("/login") || pathname.startsWith("/verify") || pathname.startsWith("/api")) {
+  // Hide on OTP verify and API routes (but show on /login)
+  if (pathname.startsWith("/verify") || pathname.startsWith("/api")) {
     return null;
   }
 
