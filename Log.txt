@@ -1196,3 +1196,29 @@ npx next build
 - Home includes working calendar; /calendar redirects safely
 
 ---
+
+## Entry 047 — UI: Bookmarks Merged into My Events
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Removed standalone /bookmarks page (now redirects to /my-events)
+- Integrated bookmarked events into /my-events via tabbed toggle (Attending / Bookmarks)
+- Created MyEventsTabs client component with CalendarCheck and Bookmark icon tabs
+- Both lists use Instagram-style event cards linking to /event/[id]
+- Removed Bookmarks quick action link from /home
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- /my-events toggles between Attending and Bookmarks correctly
+
+---
