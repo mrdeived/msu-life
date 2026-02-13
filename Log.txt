@@ -893,3 +893,27 @@ npx next build
 - /feed shows correct counters matching event interactions
 
 ---
+
+## Entry 034 — UI: Feed Inline Actions + Instagram Ratio Banner
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Updated /feed banner to use Instagram-like 4:5 aspect ratio on sm+ while keeping mobile compact
+- Added FeedActionRow with clickable Like/Bookmark/Attend toggles using existing APIs
+- Implemented efficient per-user state lookup for feed items (no N+1 queries)
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Feed icons toggle interactions without navigating; card click still opens detail
+
+---
