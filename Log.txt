@@ -1222,3 +1222,26 @@ npx next build
 - /my-events toggles between Attending and Bookmarks correctly
 
 ---
+
+## Entry 048 — UX: Create Event moved to My Created Events
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Removed Create Event entry point from /home quick actions
+- Added "+" icon button in /my-created-events header linking to /events/new
+
+### Commands
+
+```
+npx next build
+```
+
+### Verification
+
+- Admin creates events via /my-created-events; home stays student-focused
+
+---

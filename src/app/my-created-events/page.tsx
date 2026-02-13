@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/requireAdmin";
 import { prisma } from "@/lib/prisma";
 import DeleteEventButton from "@/components/DeleteEventButton";
@@ -42,7 +42,14 @@ export default async function MyCreatedEventsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <header className="bg-msu-red border-b-2 border-msu-green px-4 py-3 flex items-center gap-4">
         <Link href="/home" className="text-msu-white/80 text-sm hover:text-msu-white">&larr; Home</Link>
-        <h1 className="text-lg font-bold text-msu-white">My Created Events</h1>
+        <h1 className="text-lg font-bold text-msu-white flex-1">My Created Events</h1>
+        <Link
+          href="/events/new"
+          aria-label="Create event"
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-msu-white/20 hover:bg-msu-white/30 transition-colors"
+        >
+          <Plus className="w-5 h-5 text-msu-white" />
+        </Link>
       </header>
 
       <main className="max-w-lg mx-auto sm:py-6 space-y-4 sm:space-y-6">
