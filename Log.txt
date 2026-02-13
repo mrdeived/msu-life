@@ -1279,3 +1279,39 @@ npx next build
 - Nav appears on all logged-in pages, hides on login, and reflects admin/non-admin tabs
 
 ---
+
+## Entry 050 — Accounts: User Display Name + Editable Profile
+
+### Date
+
+2026-02-12
+
+### Summary
+
+- Added optional firstName/lastName fields to User (Prisma + migration)
+- Auto-derived names from ndus.edu email local-part on user creation when empty
+- Added /profile page to edit name fields
+- Updated /api/auth/me to return firstName, lastName, displayName
+- Home top bar shows "Hi, {displayName}" greeting
+
+### Files Added/Edited
+
+- Edited: `prisma/schema.prisma` — added firstName, lastName to User
+- Added: `src/lib/deriveNames.ts` — email-to-name derivation + display name helper
+- Edited: `src/app/api/auth/verify-otp/route.ts` — auto-fill names on user creation
+- Edited: `src/app/api/auth/me/route.ts` — added name fields to response
+- Edited: `src/app/profile/page.tsx` — editable name form with server action
+- Edited: `src/app/home/page.tsx` — greeting with display name
+
+### Commands
+
+```
+npx prisma migrate dev --name add_user_names
+npx next build
+```
+
+### Verification
+
+- Users see stable display name; profile edits persist; existing accounts unaffected
+
+---

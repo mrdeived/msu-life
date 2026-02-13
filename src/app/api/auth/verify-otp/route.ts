@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyOtpSchema } from "@/lib/validation";
 import { hashOtp } from "@/lib/otp";
 import { signSession, sessionCookieHeader } from "@/lib/session";
+import { deriveNamesFromEmail } from "@/lib/deriveNames";
 
 const ALLOWED_DOMAIN = (process.env.ALLOWED_EMAIL_DOMAIN ?? "ndus.edu").toLowerCase();
 
@@ -28,10 +29,11 @@ export async function POST(request: Request) {
   const demoBypassEnabled = process.env.OTP_DEMO_BYPASS === "true";
 
   if (demoBypassEnabled && code === "000000") {
+    const derived = deriveNamesFromEmail(email);
     const user = await prisma.user.upsert({
       where: { email },
       update: {},
-      create: { email, role: "STUDENT", isActive: true, isBanned: false },
+      create: { email, role: "STUDENT", isActive: true, isBanned: false, firstName: derived.firstName, lastName: derived.lastName },
       select: { id: true, email: true, role: true },
     });
 
@@ -68,6 +70,7 @@ export async function POST(request: Request) {
       return null;
     }
 
+    const names = deriveNamesFromEmail(email);
     return tx.user.upsert({
       where: { email },
       update: {},
@@ -76,6 +79,8 @@ export async function POST(request: Request) {
         role: "STUDENT",
         isActive: true,
         isBanned: false,
+        firstName: names.firstName,
+        lastName: names.lastName,
       },
       select: { id: true, email: true, role: true },
     });
