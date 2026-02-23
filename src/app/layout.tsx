@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MSU Life",
-  description: "Minot State University campus life app",
+  title: "Beaver App",
+  description: "Beaver App — Campus events & engagement",
 };
 
 export default function RootLayout({

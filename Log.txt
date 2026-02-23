@@ -1438,3 +1438,22 @@ npx next build
 - /event/[id] shows @username under title; fallback works when username missing
 
 ---
+
+## Entry 056 — Rebrand: Beaver App
+
+Date:
+2026-02-12
+
+Summary:
+- Renamed app from MSU Life to Beaver App
+- Updated PWA manifest name and short_name
+- Updated global metadata title
+- Updated Home header to centered italic "Beaver App"
+
+Commands:
+npx next build
+
+Verification:
+App installs as Beaver App, browser title updated, and Home header shows centered italic Beaver App.
+
+---

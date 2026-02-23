@@ -35,7 +35,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Top bar */}
       <header className="bg-msu-red border-b-2 border-msu-green px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-msu-white">MSU Life</h1>
+        <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-msu-white italic">Beaver App</h1>
         <div className="flex items-center gap-3">
           {user ? (
             <span className="text-sm text-msu-white/80 hidden sm:inline">Hi, {displayName}</span>
