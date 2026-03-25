@@ -1495,3 +1495,23 @@ Verification:
 The Beaver Wordle page is playable, validates guesses, shows colored feedback for each submitted guess, and allows local reset with Play Again.
 
 ---
+
+## Entry 059 — Beaver Wordle: Persistence and Leaderboard
+
+Date:
+2026-03-25
+
+Summary:
+- Added database persistence for completed Beaver Wordle sessions
+- Linked saved results to authenticated users
+- Added the first Beaver Wordle leaderboard using persisted game data
+- Prevented duplicate result saves for the same completed playthrough
+
+Commands:
+npx prisma migrate dev
+npm run lint
+
+Verification:
+Completed Beaver Wordle games now save to the database, each result is tied to the signed-in user, and the page shows a leaderboard with real persisted results.
+
+---
