@@ -1476,3 +1476,22 @@ Verification:
 Home shows a new Beaver Wordle entry below Announcements, and the button navigates to /games/wordle successfully.
 
 ---
+
+## Entry 058 — Beaver Wordle: First Playable Version
+
+Date:
+2026-03-25
+
+Summary:
+- Replaced the Wordle placeholder with the first playable Beaver Wordle version
+- Added a 5-letter guessing loop with 6 attempts
+- Implemented per-letter feedback for correct, present, and absent states
+- Added local restart flow for replay without persistence
+
+Commands:
+npm run lint
+
+Verification:
+The Beaver Wordle page is playable, validates guesses, shows colored feedback for each submitted guess, and allows local reset with Play Again.
+
+---
