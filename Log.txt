@@ -1515,3 +1515,23 @@ Verification:
 Completed Beaver Wordle games now save to the database, each result is tied to the signed-in user, and the page shows a leaderboard with real persisted results.
 
 ---
+
+## Entry 060 — Beaver Wordle: Daily Puzzle and One Result Per Day
+
+Date:
+2026-03-25
+
+Summary:
+- Replaced the fixed Beaver Wordle answer with a deterministic daily puzzle system
+- Added daily puzzle tracking to persisted Beaver Wordle results
+- Restricted authenticated users to one completed Beaver Wordle result per day
+- Updated the leaderboard to show today's Beaver Wordle results only
+
+Commands:
+npx prisma migrate dev
+npm run lint
+
+Verification:
+Beaver Wordle now uses a daily answer, all users receive the same puzzle for the day, authenticated users can only record one completed result per day, and the leaderboard shows today's results only.
+
+---

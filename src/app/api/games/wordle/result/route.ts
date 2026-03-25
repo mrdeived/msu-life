@@ -13,15 +13,22 @@ export async function POST(request: Request) {
     return Response.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  let body: { answer: string; won: boolean; attempts: number; maxAttempts: number };
+  let body: {
+    puzzleDate: string;
+    answer: string;
+    won: boolean;
+    attempts: number;
+    maxAttempts: number;
+  };
   try {
     body = await request.json();
   } catch {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { answer, won, attempts, maxAttempts } = body;
+  const { puzzleDate, answer, won, attempts, maxAttempts } = body;
   if (
+    typeof puzzleDate !== "string" ||
     typeof answer !== "string" ||
     typeof won !== "boolean" ||
     typeof attempts !== "number" ||
@@ -30,14 +37,16 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
 
+  // Enforce one completed result per user per puzzle day
+  const existing = await prisma.wordleResult.findFirst({
+    where: { userId: user.id, puzzleDate },
+  });
+  if (existing) {
+    return Response.json({ ok: true, alreadyExists: true });
+  }
+
   const result = await prisma.wordleResult.create({
-    data: {
-      userId: user.id,
-      answer,
-      won,
-      attempts,
-      maxAttempts,
-    },
+    data: { userId: user.id, puzzleDate, answer, won, attempts, maxAttempts },
   });
 
   return Response.json({ ok: true, id: result.id });
