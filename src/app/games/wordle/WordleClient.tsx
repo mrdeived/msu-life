@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { evaluateGuess, type EvaluatedLetter } from "./evaluate";
+import type { WordleStats } from "./stats";
 
 const MAX_GUESSES = 6;
 const WORD_LENGTH = 5;
@@ -28,6 +29,7 @@ interface WordleClientProps {
   todayStr: string;
   answer: string;
   todayResult: { won: boolean; attempts: number; maxAttempts: number } | null;
+  stats: WordleStats | null;
   leaderboard: LeaderboardEntry[];
 }
 
@@ -98,6 +100,57 @@ function GameBoard({
   );
 }
 
+function PersonalStats({ stats }: { stats: WordleStats }) {
+  return (
+    <section className="w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
+      <h2 className="text-base font-semibold mb-4 text-msu-red">Your Stats</h2>
+
+      {/* Streaks row */}
+      <div className="flex justify-around mb-4">
+        <div className="flex flex-col items-center gap-0.5">
+          <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {stats.currentStreak}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 text-center leading-tight">
+            Current<br />Streak
+          </span>
+        </div>
+        <div className="w-px bg-gray-200 dark:bg-gray-700" />
+        <div className="flex flex-col items-center gap-0.5">
+          <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            {stats.bestStreak}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 text-center leading-tight">
+            Best<br />Streak
+          </span>
+        </div>
+      </div>
+
+      {/* Lifetime stats grid */}
+      <div className="grid grid-cols-4 gap-2 text-center">
+        {[
+          { label: "Played", value: stats.totalGames },
+          { label: "Wins", value: stats.totalWins },
+          { label: "Losses", value: stats.totalLosses },
+          { label: "Win %", value: `${stats.winRate}%` },
+        ].map(({ label, value }) => (
+          <div key={label} className="flex flex-col items-center gap-0.5">
+            <span className="text-lg font-bold text-gray-800 dark:text-gray-100">{value}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Optional: avg attempts on wins */}
+      {stats.avgAttemptsOnWin !== null && (
+        <p className="mt-3 text-xs text-gray-400 text-center">
+          Avg attempts on wins: <span className="font-medium text-gray-600 dark:text-gray-300">{stats.avgAttemptsOnWin}</span>
+        </p>
+      )}
+    </section>
+  );
+}
+
 function Leaderboard({ entries }: { entries: LeaderboardEntry[] }) {
   return (
     <section className="w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
@@ -141,6 +194,7 @@ export default function WordleClient({
   todayStr,
   answer,
   todayResult,
+  stats,
   leaderboard,
 }: WordleClientProps) {
   const router = useRouter();
@@ -254,6 +308,7 @@ export default function WordleClient({
                 Come back tomorrow for the next puzzle.
               </p>
             </div>
+            {stats && <PersonalStats stats={stats} />}
             <Leaderboard entries={leaderboard} />
           </div>
         ) : (
@@ -340,6 +395,7 @@ export default function WordleClient({
               </span>
             </div>
 
+            {stats && <PersonalStats stats={stats} />}
             <Leaderboard entries={leaderboard} />
           </>
         )}

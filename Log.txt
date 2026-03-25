@@ -1535,3 +1535,22 @@ Verification:
 Beaver Wordle now uses a daily answer, all users receive the same puzzle for the day, authenticated users can only record one completed result per day, and the leaderboard shows today's results only.
 
 ---
+
+## Entry 061 — Beaver Wordle: Personal Stats and Streaks
+
+Date:
+2026-03-25
+
+Summary:
+- Added personal Beaver Wordle stats for authenticated users
+- Implemented current streak and best streak tracking based on completed daily puzzles
+- Displayed lifetime Beaver Wordle results including wins, losses, and win rate
+- Kept the daily puzzle and leaderboard flow compatible with personal progress tracking
+
+Commands:
+npm run lint
+
+Verification:
+Authenticated users can now see Beaver Wordle personal stats, including current streak, best streak, total wins, total losses, and win rate, all calculated from persisted daily results.
+
+---

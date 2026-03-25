@@ -1,6 +1,7 @@
 import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import { getTodayStr, getDailyAnswer } from "./words";
+import { computeStats, type WordleStats } from "./stats";
 import WordleClient, { type LeaderboardEntry } from "./WordleClient";
 
 export default async function BeaverWordlePage() {
@@ -10,12 +11,26 @@ export default async function BeaverWordlePage() {
 
   // Check if the authenticated user already completed today's puzzle
   let todayResult: { won: boolean; attempts: number; maxAttempts: number } | null = null;
+  let stats: WordleStats | null = null;
+
   if (user) {
-    const record = await prisma.wordleResult.findFirst({
-      where: { userId: user.id, puzzleDate: todayStr },
-      select: { won: true, attempts: true, maxAttempts: true },
+    // Fetch all of the user's results in one query (used for both today-check and stats)
+    const allResults = await prisma.wordleResult.findMany({
+      where: { userId: user.id },
+      select: { puzzleDate: true, won: true, attempts: true, maxAttempts: true },
+      orderBy: { puzzleDate: "asc" },
     });
-    if (record) todayResult = record;
+
+    const todayRecord = allResults.find((r) => r.puzzleDate === todayStr);
+    if (todayRecord) {
+      todayResult = {
+        won: todayRecord.won,
+        attempts: todayRecord.attempts,
+        maxAttempts: todayRecord.maxAttempts,
+      };
+    }
+
+    stats = computeStats(allResults, todayStr);
   }
 
   // Leaderboard: today's puzzle results only
@@ -23,8 +38,8 @@ export default async function BeaverWordlePage() {
     where: { puzzleDate: todayStr },
     take: 10,
     orderBy: [
-      { won: "desc" },      // wins first
-      { attempts: "asc" },  // fewer attempts rank higher among wins
+      { won: "desc" },       // wins first
+      { attempts: "asc" },   // fewer attempts rank higher among wins
       { createdAt: "desc" }, // most recent as tie-breaker
     ],
     include: {
@@ -49,6 +64,7 @@ export default async function BeaverWordlePage() {
       todayStr={todayStr}
       answer={answer}
       todayResult={todayResult}
+      stats={stats}
       leaderboard={leaderboard}
     />
   );
