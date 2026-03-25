@@ -1457,3 +1457,22 @@ Verification:
 App installs as Beaver App, browser title updated, and Home header shows centered italic Beaver App.
 
 ---
+
+## Entry 057 — Home Update: Wordle Entry Button
+
+Date:
+2026-03-25
+
+Summary:
+- Updated the existing Home page
+- Added a new game entry button below Announcements
+- Connected the Home button to the Beaver Wordle route
+- Prepared the Home entry point for the new mini-game feature
+
+Commands:
+npm run lint
+
+Verification:
+Home shows a new Beaver Wordle entry below Announcements, and the button navigates to /games/wordle successfully.
+
+---

@@ -94,6 +94,21 @@ export default async function HomePage() {
           </section>
         </div>
 
+        {/* Mini Games */}
+        <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
+          <h2 className="text-base font-semibold mb-3 text-msu-red">Mini Games</h2>
+          <Link
+            href="/games/wordle"
+            className="flex items-center justify-between rounded-md border border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          >
+            <div>
+              <p className="text-sm font-medium">Beaver Wordle</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Guess today&apos;s word — a new challenge every day</p>
+            </div>
+            <span className="text-msu-red font-bold text-lg">→</span>
+          </Link>
+        </section>
+
         {/* Calendar */}
         <HomeCalendarSection />
       </main>
