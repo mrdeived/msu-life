@@ -1,15 +1,23 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { evaluateGuess, type EvaluatedLetter } from "./evaluate";
+import { evaluateGuess, type EvaluatedLetter, type LetterState } from "./evaluate";
 import type { WordleStats } from "./stats";
 
 const MAX_GUESSES = 6;
 const WORD_LENGTH = 5;
 
-type CellState = "correct" | "present" | "absent" | "empty";
+// ── Keyboard layout ────────────────────────────────────────────────────────
+const KEYBOARD_ROWS = [
+  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+  ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "⌫"],
+];
+
+// ── Types ──────────────────────────────────────────────────────────────────
+type CellState = "correct" | "present" | "absent" | "empty" | "active";
 
 interface SubmittedRow {
   letters: EvaluatedLetter[];
@@ -33,9 +41,27 @@ interface WordleClientProps {
   leaderboard: LeaderboardEntry[];
 }
 
-function cellStyle(state: CellState): string {
+// ── Keyboard state derivation ──────────────────────────────────────────────
+// Returns the strongest known state for each letter.
+// Priority: correct (3) > present (2) > absent (1)
+function deriveKeyboardState(submitted: SubmittedRow[]): Record<string, LetterState> {
+  const priority: Record<LetterState, number> = { correct: 3, present: 2, absent: 1 };
+  const result: Record<string, LetterState> = {};
+  for (const row of submitted) {
+    for (const cell of row.letters) {
+      const existing = result[cell.letter];
+      if (!existing || priority[cell.state] > priority[existing]) {
+        result[cell.letter] = cell.state;
+      }
+    }
+  }
+  return result;
+}
+
+// ── Cell styling ───────────────────────────────────────────────────────────
+function cellStyle(state: CellState, hasLetter = false): string {
   const base =
-    "w-12 h-12 flex items-center justify-center text-lg font-bold border-2 uppercase select-none";
+    "w-12 h-12 flex items-center justify-center text-lg font-bold border-2 rounded uppercase select-none transition-colors duration-150";
   switch (state) {
     case "correct":
       return `${base} bg-green-600 border-green-600 text-white`;
@@ -43,11 +69,36 @@ function cellStyle(state: CellState): string {
       return `${base} bg-yellow-500 border-yellow-500 text-white`;
     case "absent":
       return `${base} bg-gray-500 border-gray-500 text-white`;
+    case "active":
+      return `${base} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+        hasLetter
+          ? "border-gray-600 dark:border-gray-300 ring-1 ring-gray-400 dark:ring-gray-400"
+          : "border-gray-400 dark:border-gray-500"
+      }`;
     case "empty":
-      return `${base} bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100`;
+    default:
+      return `${base} bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100`;
   }
 }
 
+// ── Key styling ────────────────────────────────────────────────────────────
+function keyStyle(state: LetterState | undefined, isWide: boolean): string {
+  const base = `flex items-center justify-center rounded font-bold text-xs sm:text-sm transition-colors duration-150 select-none cursor-pointer h-14 ${
+    isWide ? "px-2 sm:px-3 min-w-[3rem] sm:min-w-[3.5rem]" : "flex-1 min-w-0"
+  }`;
+  switch (state) {
+    case "correct":
+      return `${base} bg-green-600 text-white`;
+    case "present":
+      return `${base} bg-yellow-500 text-white`;
+    case "absent":
+      return `${base} bg-gray-500 dark:bg-gray-600 text-white`;
+    default:
+      return `${base} bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 active:opacity-70`;
+  }
+}
+
+// ── GameBoard ─────────────────────────────────────────────────────────────
 function GameBoard({
   submitted,
   currentGuess,
@@ -61,6 +112,7 @@ function GameBoard({
     <div className="flex flex-col gap-1.5">
       {Array.from({ length: MAX_GUESSES }, (_, rowIdx) => {
         if (rowIdx < submitted.length) {
+          // Submitted row — show evaluation colors
           return (
             <div key={rowIdx} className="flex gap-1.5">
               {submitted[rowIdx].letters.map((cell, colIdx) => (
@@ -71,16 +123,15 @@ function GameBoard({
             </div>
           );
         }
+
         if (rowIdx === currentRow) {
+          // Active row — show current input with stronger border
           return (
             <div key={rowIdx} className="flex gap-1.5">
               {Array.from({ length: WORD_LENGTH }, (_, colIdx) => {
                 const letter = currentGuess[colIdx] ?? "";
                 return (
-                  <div
-                    key={colIdx}
-                    className={`${cellStyle("empty")} ${letter ? "border-gray-500 dark:border-gray-400" : ""}`}
-                  >
+                  <div key={colIdx} className={cellStyle("active", !!letter)}>
                     {letter}
                   </div>
                 );
@@ -88,6 +139,8 @@ function GameBoard({
             </div>
           );
         }
+
+        // Future empty row
         return (
           <div key={rowIdx} className="flex gap-1.5">
             {Array.from({ length: WORD_LENGTH }, (_, colIdx) => (
@@ -100,12 +153,56 @@ function GameBoard({
   );
 }
 
+// ── OnScreenKeyboard ──────────────────────────────────────────────────────
+function OnScreenKeyboard({
+  keyStates,
+  onKey,
+  disabled,
+}: {
+  keyStates: Record<string, LetterState>;
+  onKey: (key: string) => void;
+  disabled: boolean;
+}) {
+  return (
+    <div
+      className={`w-full max-w-sm flex flex-col gap-1 px-0.5 ${
+        disabled ? "pointer-events-none opacity-40" : ""
+      }`}
+    >
+      {KEYBOARD_ROWS.map((row, rowIdx) => (
+        <div key={rowIdx} className="flex justify-center gap-1">
+          {/* Spacer to centre row 2 (ASDFGHJKL) */}
+          {rowIdx === 1 && <div className="flex-[0.5]" />}
+          {row.map((key) => {
+            const isWide = key === "ENTER" || key === "⌫";
+            return (
+              <button
+                key={key}
+                type="button"
+                onPointerDown={(e) => {
+                  e.preventDefault(); // prevent focus shift
+                  onKey(key);
+                }}
+                className={keyStyle(isWide ? undefined : keyStates[key], isWide)}
+                aria-label={key === "⌫" ? "Backspace" : key}
+              >
+                {key}
+              </button>
+            );
+          })}
+          {rowIdx === 1 && <div className="flex-[0.5]" />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── PersonalStats ─────────────────────────────────────────────────────────
 function PersonalStats({ stats }: { stats: WordleStats }) {
   return (
     <section className="w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
       <h2 className="text-base font-semibold mb-4 text-msu-red">Your Stats</h2>
 
-      {/* Streaks row */}
       <div className="flex justify-around mb-4">
         <div className="flex flex-col items-center gap-0.5">
           <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">
@@ -126,7 +223,6 @@ function PersonalStats({ stats }: { stats: WordleStats }) {
         </div>
       </div>
 
-      {/* Lifetime stats grid */}
       <div className="grid grid-cols-4 gap-2 text-center">
         {[
           { label: "Played", value: stats.totalGames },
@@ -141,16 +237,19 @@ function PersonalStats({ stats }: { stats: WordleStats }) {
         ))}
       </div>
 
-      {/* Optional: avg attempts on wins */}
       {stats.avgAttemptsOnWin !== null && (
         <p className="mt-3 text-xs text-gray-400 text-center">
-          Avg attempts on wins: <span className="font-medium text-gray-600 dark:text-gray-300">{stats.avgAttemptsOnWin}</span>
+          Avg attempts on wins:{" "}
+          <span className="font-medium text-gray-600 dark:text-gray-300">
+            {stats.avgAttemptsOnWin}
+          </span>
         </p>
       )}
     </section>
   );
 }
 
+// ── Leaderboard ───────────────────────────────────────────────────────────
 function Leaderboard({ entries }: { entries: LeaderboardEntry[] }) {
   return (
     <section className="w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
@@ -189,6 +288,7 @@ function Leaderboard({ entries }: { entries: LeaderboardEntry[] }) {
   );
 }
 
+// ── Main component ─────────────────────────────────────────────────────────
 export default function WordleClient({
   userId,
   todayStr,
@@ -200,20 +300,84 @@ export default function WordleClient({
   const router = useRouter();
   const [submitted, setSubmitted] = useState<SubmittedRow[]>([]);
   const [currentGuess, setCurrentGuess] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
-  // Tracks whether this session's result has been saved to the DB
   const savedRef = useRef(false);
 
-  // "Already completed" on fresh page load — no active game started yet
+  // Stable refs used by the physical keyboard listener (no stale closure risk)
+  const submitGuessRef = useRef<() => void>(() => {});
+  const gameActiveRef = useRef(false);
+
   const showAlreadyCompleted =
     todayResult !== null && submitted.length === 0 && !gameOver;
 
+  // Keep refs in sync after each render (not during render)
+  useEffect(() => {
+    gameActiveRef.current = !gameOver && !showAlreadyCompleted;
+  });
+
+  // Derive keyboard state from submitted guesses
+  const keyStates = deriveKeyboardState(submitted);
+
+  // ── Auto-dismiss validation messages ──────────────────────────────────
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(null), 1800);
+    return () => clearTimeout(t);
+  }, [message]);
+
+  // ── Physical keyboard input ────────────────────────────────────────────
+  // Registered once with empty deps; uses refs to read latest state safely.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (!gameActiveRef.current) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // Ignore if focused on an input element
+      if (
+        document.activeElement instanceof HTMLInputElement ||
+        document.activeElement instanceof HTMLTextAreaElement
+      )
+        return;
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submitGuessRef.current();
+      } else if (e.key === "Backspace") {
+        e.preventDefault();
+        setCurrentGuess((prev) => prev.slice(0, -1));
+        setMessage(null);
+      } else if (/^[a-zA-Z]$/.test(e.key)) {
+        setCurrentGuess((prev) =>
+          prev.length < WORD_LENGTH ? prev + e.key.toUpperCase() : prev
+        );
+        setMessage(null);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []); // stable listener — reads state through refs
+
+  // ── On-screen key handler ──────────────────────────────────────────────
+  function handleOnScreenKey(key: string) {
+    if (!gameActiveRef.current) return;
+    if (key === "ENTER") {
+      submitGuessRef.current();
+    } else if (key === "⌫") {
+      setCurrentGuess((prev) => prev.slice(0, -1));
+      setMessage(null);
+    } else {
+      setCurrentGuess((prev) =>
+        prev.length < WORD_LENGTH ? prev + key : prev
+      );
+      setMessage(null);
+    }
+  }
+
+  // ── Persist result ─────────────────────────────────────────────────────
   async function saveResult(isWin: boolean, attemptsUsed: number) {
     if (!userId) return;
-    if (savedRef.current) return;
-    savedRef.current = true;
     try {
       await fetch("/api/games/wordle/result", {
         method: "POST",
@@ -228,24 +392,16 @@ export default function WordleClient({
       });
       router.refresh();
     } catch {
-      // save failure is silent — game still works
+      // silent — game continues regardless
     }
   }
 
-  function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value.toUpperCase().replace(/[^A-Z]/g, "");
-    if (value.length <= WORD_LENGTH) {
-      setCurrentGuess(value);
-      setError(null);
-    }
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // ── Submit guess ───────────────────────────────────────────────────────
+  function submitGuess() {
     if (gameOver) return;
 
     if (currentGuess.length < WORD_LENGTH) {
-      setError(`Word must be exactly ${WORD_LENGTH} letters.`);
+      setMessage(`Word must be exactly ${WORD_LENGTH} letters.`);
       return;
     }
 
@@ -253,6 +409,7 @@ export default function WordleClient({
     const newSubmitted = [...submitted, { letters: evaluated }];
     setSubmitted(newSubmitted);
     setCurrentGuess("");
+    setMessage(null);
 
     const isWin = evaluated.every((l) => l.state === "correct");
     const isLoss = !isWin && newSubmitted.length >= MAX_GUESSES;
@@ -260,10 +417,20 @@ export default function WordleClient({
     if (isWin || isLoss) {
       setGameOver(true);
       if (isWin) setWon(true);
-      saveResult(isWin, newSubmitted.length);
+      if (!savedRef.current) {
+        savedRef.current = true;
+        saveResult(isWin, newSubmitted.length);
+      }
     }
   }
 
+  // Keep submitGuessRef current so the stable keydown listener always calls
+  // the latest version of submitGuess without needing to re-register.
+  useEffect(() => {
+    submitGuessRef.current = submitGuess;
+  });
+
+  // ── Render ─────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-28">
       {/* Header */}
@@ -276,43 +443,49 @@ export default function WordleClient({
         </h1>
       </header>
 
-      <main className="max-w-lg mx-auto flex flex-col items-center gap-6 px-4 py-8">
+      <main className="max-w-lg mx-auto flex flex-col items-center gap-5 px-4 py-6">
         {/* Daily label */}
         <div className="flex flex-col items-center gap-1">
-          <span className="text-xs font-medium text-msu-red uppercase tracking-widest">
+          <span className="text-xs font-semibold text-msu-red uppercase tracking-widest">
             Daily Puzzle
           </span>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {todayStr} · One puzzle per day · 5 letters · 6 tries
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            {todayStr} · 5 letters · 6 tries
           </p>
         </div>
 
         {showAlreadyCompleted ? (
-          /* ── Already completed today ── */
-          <div className="w-full flex flex-col items-center gap-4">
+          /* ── Already completed today ─────────────────────────────── */
+          <div className="w-full flex flex-col gap-4">
             <div className="w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-6 text-center">
-              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-1">
-                Today&apos;s puzzle
+              <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                Today&apos;s puzzle — completed
               </p>
               {todayResult.won ? (
-                <p className="text-lg font-bold text-green-600">You won! 🎉</p>
+                <>
+                  <p className="text-xl font-bold text-green-600">Solved!</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {todayResult.attempts} of {todayResult.maxAttempts} attempts
+                  </p>
+                </>
               ) : (
-                <p className="text-lg font-bold text-red-500">Better luck tomorrow.</p>
+                <>
+                  <p className="text-xl font-bold text-red-500">Not this time.</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    The word was{" "}
+                    <span className="font-bold text-gray-700 dark:text-gray-200 uppercase">
+                      {answer}
+                    </span>
+                  </p>
+                </>
               )}
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                {todayResult.won
-                  ? `Solved in ${todayResult.attempts} of ${todayResult.maxAttempts} attempts`
-                  : `Used all ${todayResult.maxAttempts} attempts`}
-              </p>
-              <p className="text-xs text-gray-400 mt-3">
-                Come back tomorrow for the next puzzle.
-              </p>
+              <p className="text-xs text-gray-400 mt-3">Come back tomorrow for the next puzzle.</p>
             </div>
             {stats && <PersonalStats stats={stats} />}
             <Leaderboard entries={leaderboard} />
           </div>
         ) : (
-          /* ── Active game ── */
+          /* ── Active game ─────────────────────────────────────────── */
           <>
             <GameBoard
               submitted={submitted}
@@ -320,78 +493,66 @@ export default function WordleClient({
               currentRow={submitted.length}
             />
 
-            {!gameOver ? (
-              <form
-                onSubmit={handleSubmit}
-                className="flex flex-col items-center gap-3 w-full max-w-xs"
-              >
-                <div className="flex gap-2 w-full">
-                  <input
-                    type="text"
-                    value={currentGuess}
-                    onChange={handleInput}
-                    maxLength={WORD_LENGTH}
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="characters"
-                    spellCheck={false}
-                    placeholder="Type a word…"
-                    className="flex-1 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-sm uppercase tracking-widest bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-msu-red"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-msu-red text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity"
-                  >
-                    Enter
-                  </button>
+            {/* Inline validation / end-state message */}
+            <div className="h-7 flex items-center justify-center">
+              {message && !gameOver && (
+                <p className="text-sm font-medium text-white bg-gray-800 dark:bg-gray-700 px-3 py-1 rounded-full">
+                  {message}
+                </p>
+              )}
+              {gameOver && (
+                <div className="text-center">
+                  {won ? (
+                    <p className="text-base font-bold text-green-600">
+                      Solved in {submitted.length}!
+                    </p>
+                  ) : (
+                    <p className="text-base font-bold text-red-500">
+                      The word was{" "}
+                      <span className="uppercase text-gray-700 dark:text-gray-200">{answer}</span>
+                    </p>
+                  )}
                 </div>
-                {error && <p className="text-xs text-red-500">{error}</p>}
+              )}
+              {!gameOver && !message && (
                 <p className="text-xs text-gray-400">
                   Attempt {submitted.length + 1} of {MAX_GUESSES}
                 </p>
-              </form>
-            ) : (
-              <div className="flex flex-col items-center gap-3 text-center">
-                {won ? (
-                  <p className="text-base font-semibold text-green-600">
-                    You got it! Great job.
-                  </p>
-                ) : (
-                  <>
-                    <p className="text-base font-semibold text-red-500">
-                      Better luck next time.
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      The word was{" "}
-                      <span className="font-bold text-gray-700 dark:text-gray-200">{answer}</span>.
-                    </p>
-                  </>
-                )}
-                {userId ? (
-                  <p className="text-xs text-gray-400 mt-1">
-                    Result saved. Come back tomorrow for the next puzzle.
-                  </p>
-                ) : (
-                  <p className="text-xs text-gray-400 mt-1">
-                    <Link href="/login" className="underline hover:text-msu-red">
-                      Log in
-                    </Link>{" "}
-                    to save your result and appear on the leaderboard.
-                  </p>
-                )}
-              </div>
+              )}
+            </div>
+
+            {/* On-screen keyboard */}
+            <OnScreenKeyboard
+              keyStates={keyStates}
+              onKey={handleOnScreenKey}
+              disabled={gameOver}
+            />
+
+            {/* Post-game note */}
+            {gameOver && (
+              <p className="text-xs text-gray-400 text-center -mt-1">
+                {userId
+                  ? "Result saved. Come back tomorrow for the next puzzle."
+                  : <>
+                      <Link href="/login" className="underline hover:text-msu-red">
+                        Log in
+                      </Link>{" "}
+                      to save your result and appear on the leaderboard.
+                    </>
+                }
+              </p>
             )}
 
-            {/* Legend */}
+            {/* Color legend */}
             <div className="flex gap-4 text-xs text-gray-500 dark:text-gray-400">
               <span className="flex items-center gap-1">
-                <span className="w-4 h-4 rounded bg-green-600 inline-block" /> Correct
+                <span className="w-3 h-3 rounded-sm bg-green-600 inline-block" /> Correct
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-4 h-4 rounded bg-yellow-500 inline-block" /> Wrong position
+                <span className="w-3 h-3 rounded-sm bg-yellow-500 inline-block" /> Wrong spot
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-4 h-4 rounded bg-gray-500 inline-block" /> Not in word
+                <span className="w-3 h-3 rounded-sm bg-gray-500 inline-block" /> Not in word
               </span>
             </div>
 
