@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { evaluateGuess, type EvaluatedLetter, type LetterState } from "./evaluate";
@@ -223,10 +223,12 @@ function GameBoard({
   submitted,
   currentGuess,
   currentRow,
+  shaking,
 }: {
   submitted: SubmittedRow[];
   currentGuess: string;
   currentRow: number;
+  shaking: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
@@ -245,9 +247,9 @@ function GameBoard({
         }
 
         if (rowIdx === currentRow) {
-          // Active row — show current input with stronger border
+          // Active row — shake on invalid submission attempt
           return (
-            <div key={rowIdx} className="flex gap-1.5">
+            <div key={rowIdx} className={`flex gap-1.5 ${shaking ? "wordle-shake" : ""}`}>
               {Array.from({ length: WORD_LENGTH }, (_, colIdx) => {
                 const letter = currentGuess[colIdx] ?? "";
                 return (
@@ -480,6 +482,8 @@ export default function WordleClient({
   const [message, setMessage] = useState<string | null>(null);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [shaking, setShaking] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const savedRef = useRef(false);
 
   // Stable refs used by the physical keyboard listener (no stale closure risk)
@@ -494,8 +498,9 @@ export default function WordleClient({
     gameActiveRef.current = !gameOver && !showAlreadyCompleted;
   });
 
-  // Derive keyboard state from submitted guesses
-  const keyStates = deriveKeyboardState(submitted);
+  // Derive keyboard state from submitted guesses — memoised so it only
+  // recalculates when a new row is submitted, not on every key press.
+  const keyStates = useMemo(() => deriveKeyboardState(submitted), [submitted]);
 
   // ── Auto-dismiss validation messages ──────────────────────────────────
   useEffect(() => {
@@ -552,9 +557,16 @@ export default function WordleClient({
     }
   }
 
+  // ── Shake the active row ───────────────────────────────────────────────
+  function triggerShake() {
+    setShaking(true);
+    setTimeout(() => setShaking(false), 400);
+  }
+
   // ── Persist result ─────────────────────────────────────────────────────
   async function saveResult(isWin: boolean, attemptsUsed: number, guessPattern: string, guesses: string) {
     if (!userId) return;
+    setIsSaving(true);
     try {
       await fetch("/api/games/wordle/result", {
         method: "POST",
@@ -572,6 +584,7 @@ export default function WordleClient({
       router.refresh();
     } catch {
       // silent — game continues regardless
+      setIsSaving(false);
     }
   }
 
@@ -581,6 +594,7 @@ export default function WordleClient({
 
     if (currentGuess.length < WORD_LENGTH) {
       setMessage(`Word must be exactly ${WORD_LENGTH} letters.`);
+      triggerShake();
       return;
     }
 
@@ -684,6 +698,7 @@ export default function WordleClient({
               submitted={submitted}
               currentGuess={currentGuess}
               currentRow={submitted.length}
+              shaking={shaking}
             />
 
             {/* Inline validation / end-state message */}
@@ -724,7 +739,11 @@ export default function WordleClient({
             {/* Post-game: countdown + share */}
             {gameOver && (
               <div className="flex flex-col items-center gap-2 -mt-1">
-                <NextPuzzleCountdown />
+                {isSaving && userId ? (
+                  <p className="text-xs text-gray-400 animate-pulse">Saving result…</p>
+                ) : (
+                  <NextPuzzleCountdown />
+                )}
                 <ShareButton
                   shareText={buildShareText(
                     todayStr,
