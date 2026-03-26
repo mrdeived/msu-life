@@ -3,6 +3,7 @@ import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
 import HomeCalendarSection from "@/components/HomeCalendarSection";
+import { GAMES } from "@/lib/games";
 
 export default async function HomePage() {
   const user = await optionalAuth();
@@ -96,17 +97,27 @@ export default async function HomePage() {
 
         {/* Mini Games */}
         <section className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
-          <h2 className="text-base font-semibold mb-3 text-msu-red">Mini Games</h2>
-          <Link
-            href="/games/wordle"
-            className="flex items-center justify-between rounded-md border border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <div>
-              <p className="text-sm font-medium">Beaver Wordle</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Guess today&apos;s word — a new challenge every day</p>
-            </div>
-            <span className="text-msu-red font-bold text-lg">→</span>
-          </Link>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-msu-red">Mini Games</h2>
+            <Link href="/games" className="text-xs font-medium text-msu-red hover:underline">
+              All games →
+            </Link>
+          </div>
+          <div className="flex flex-col gap-2">
+            {GAMES.filter((g) => g.available).map((game) => (
+              <Link
+                key={game.id}
+                href={game.route}
+                className="flex items-center justify-between rounded-md border border-gray-200 dark:border-gray-700 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                <div>
+                  <p className="text-sm font-medium">{game.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{game.description}</p>
+                </div>
+                <span className="text-msu-red font-bold text-lg">→</span>
+              </Link>
+            ))}
+          </div>
         </section>
 
         {/* Calendar */}

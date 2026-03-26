@@ -629,8 +629,8 @@ export default function WordleClient({
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-28">
       {/* Header */}
       <header className="bg-msu-red border-b-2 border-msu-green px-4 py-3 flex items-center">
-        <Link href="/home" className="text-sm text-msu-white/80 hover:text-msu-white mr-4">
-          ← Home
+        <Link href="/games" className="text-sm text-msu-white/80 hover:text-msu-white mr-4">
+          ← Games
         </Link>
         <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-bold text-msu-white italic">
           Beaver Wordle
