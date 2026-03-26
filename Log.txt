@@ -1750,3 +1750,22 @@ Verification:
 Users can view and post comments under announcements, comments persist in the database, and display correctly in chronological order.
 
 ---
+
+## Entry 072 — UI: App Logo Update
+
+Date:
+2026-03-26
+
+Summary:
+- Copied new logo asset (904x846 RGBA PNG) to public/logo.png
+- Generated PWA icons (192x192, 512x512) from the new logo via sharp, replacing public/icons/icon-192.png and icon-512.png
+- Generated new favicon.ico (16x16 + 32x32) from the logo, replacing src/app/favicon.ico
+- Replaced the "Beaver App" italic text in the home header with a next/image logo (h-9, w-auto, centered)
+
+Commands:
+npm run lint
+
+Verification:
+New logo appears correctly in the app header and branding without breaking layout or responsiveness.
+
+---
