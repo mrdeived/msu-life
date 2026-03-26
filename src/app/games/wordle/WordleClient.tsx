@@ -484,6 +484,7 @@ export default function WordleClient({
   const [won, setWon] = useState(false);
   const [shaking, setShaking] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const savedRef = useRef(false);
 
   // Stable refs used by the physical keyboard listener (no stale closure risk)
@@ -564,27 +565,27 @@ export default function WordleClient({
   }
 
   // ── Persist result ─────────────────────────────────────────────────────
-  async function saveResult(isWin: boolean, attemptsUsed: number, guessPattern: string, guesses: string) {
+  // Only the guesses are sent — the server validates and recomputes all
+  // outcome fields (won, attempts, guessPattern, answer) independently.
+  async function saveResult(guesses: string) {
     if (!userId) return;
     setIsSaving(true);
     try {
-      await fetch("/api/games/wordle/result", {
+      const res = await fetch("/api/games/wordle/result", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          puzzleDate: todayStr,
-          answer,
-          won: isWin,
-          attempts: attemptsUsed,
-          maxAttempts: MAX_GUESSES,
-          guessPattern,
-          guesses,
-        }),
+        body: JSON.stringify({ puzzleDate: todayStr, guesses }),
       });
+      if (!res.ok) {
+        // Server rejected the result — show a non-blocking error message
+        setIsSaving(false);
+        setSaveError(true);
+        return;
+      }
       router.refresh();
     } catch {
-      // silent — game continues regardless
       setIsSaving(false);
+      setSaveError(true);
     }
   }
 
@@ -612,7 +613,7 @@ export default function WordleClient({
       if (isWin) setWon(true);
       if (!savedRef.current) {
         savedRef.current = true;
-        saveResult(isWin, newSubmitted.length, encodeGuessPattern(newSubmitted), encodeGuesses(newSubmitted));
+        saveResult(encodeGuesses(newSubmitted));
       }
     }
   }
@@ -741,6 +742,10 @@ export default function WordleClient({
               <div className="flex flex-col items-center gap-2 -mt-1">
                 {isSaving && userId ? (
                   <p className="text-xs text-gray-400 animate-pulse">Saving result…</p>
+                ) : saveError ? (
+                  <p className="text-xs text-red-500 dark:text-red-400 text-center">
+                    Result could not be saved. Please refresh and try again.
+                  </p>
                 ) : (
                   <NextPuzzleCountdown />
                 )}
