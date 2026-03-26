@@ -1633,3 +1633,22 @@ Verification:
 Authenticated users can now open their past Beaver Wordle results and view a read-only completed board built from saved game data, while access remains restricted to the owner of each result.
 
 ---
+
+## Entry 066 — Beaver Wordle: Dedicated Archive Page
+
+Date:
+2026-03-25
+
+Summary:
+- Added a dedicated Beaver Wordle archive page for authenticated users
+- Connected the main Beaver Wordle page to the full archive experience
+- Reused past result viewing from the archive for completed daily puzzles
+- Reduced pressure on the main Beaver Wordle page by moving deeper history browsing into a separate route
+
+Commands:
+npm run lint
+
+Verification:
+Authenticated users can now open a dedicated Beaver Wordle archive page, browse their completed daily results, and open past result views from the archive while current gameplay remains unchanged.
+
+---

@@ -369,12 +369,20 @@ function PersonalStats({ stats }: { stats: WordleStats }) {
   );
 }
 
-// ── PersonalHistory ───────────────────────────────────────────────────────
+// ── PersonalHistory (recent preview — links to full archive) ──────────────
 function PersonalHistory({ entries }: { entries: HistoryEntry[] }) {
   if (entries.length === 0) return null;
   return (
     <section className="w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
-      <h2 className="text-base font-semibold mb-1 text-msu-red">Your History</h2>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-base font-semibold text-msu-red">Recent History</h2>
+        <Link
+          href="/games/wordle/archive"
+          className="text-xs font-medium text-msu-red hover:underline"
+        >
+          View archive →
+        </Link>
+      </div>
       <p className="text-xs text-gray-400 mb-4">Last {entries.length} puzzle{entries.length !== 1 ? "s" : ""}</p>
       <ol className="space-y-2">
         {entries.map((entry) => (
@@ -405,6 +413,14 @@ function PersonalHistory({ entries }: { entries: HistoryEntry[] }) {
           </li>
         ))}
       </ol>
+      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+        <Link
+          href="/games/wordle/archive"
+          className="block text-center text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-msu-red dark:hover:text-msu-red transition-colors"
+        >
+          See full puzzle archive
+        </Link>
+      </div>
     </section>
   );
 }

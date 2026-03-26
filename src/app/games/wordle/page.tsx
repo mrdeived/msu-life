@@ -34,11 +34,11 @@ export default async function BeaverWordlePage() {
 
     stats = computeStats(allResults, todayStr);
 
-    // History: most recent first, capped at 30
+    // History: most recent first, capped at 5 for main-page preview
     history = allResults
       .slice()
       .reverse()
-      .slice(0, 30)
+      .slice(0, 5)
       .map((r) => ({
         id: r.id,
         puzzleDate: r.puzzleDate,
