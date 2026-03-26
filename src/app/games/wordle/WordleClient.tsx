@@ -32,11 +32,18 @@ export interface LeaderboardEntry {
   createdAt: string;
 }
 
+interface TodayResult {
+  won: boolean;
+  attempts: number;
+  maxAttempts: number;
+  guessPattern: string;
+}
+
 interface WordleClientProps {
   userId: string | null;
   todayStr: string;
   answer: string;
-  todayResult: { won: boolean; attempts: number; maxAttempts: number } | null;
+  todayResult: TodayResult | null;
   stats: WordleStats | null;
   leaderboard: LeaderboardEntry[];
 }
@@ -56,6 +63,106 @@ function deriveKeyboardState(submitted: SubmittedRow[]): Record<string, LetterSt
     }
   }
   return result;
+}
+
+// ── Guess pattern helpers ──────────────────────────────────────────────────
+// Compact encoding: one char per letter (C=correct, P=present, A=absent),
+// rows separated by "|".  Example: "AAPAP|CCCCC"
+
+function encodeGuessPattern(submitted: SubmittedRow[]): string {
+  return submitted
+    .map((row) =>
+      row.letters
+        .map((l) => (l.state === "correct" ? "C" : l.state === "present" ? "P" : "A"))
+        .join("")
+    )
+    .join("|");
+}
+
+const PATTERN_EMOJI: Record<string, string> = { C: "🟩", P: "🟨", A: "⬛" };
+
+function buildShareText(
+  puzzleDate: string,
+  won: boolean,
+  attempts: number,
+  maxAttempts: number,
+  guessPattern: string
+): string {
+  const result = won ? `${attempts}/${maxAttempts}` : `X/${maxAttempts}`;
+  const rows = guessPattern
+    .split("|")
+    .filter(Boolean)
+    .map((row) => row.split("").map((c) => PATTERN_EMOJI[c] ?? "⬛").join(""));
+  return [`Beaver Wordle ${puzzleDate}`, result, "", ...rows].join("\n");
+}
+
+// ── Countdown helpers ──────────────────────────────────────────────────────
+
+function getMsUntilNextPuzzle(): number {
+  const now = new Date();
+  const nextMidnightUTC = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1
+  );
+  return Math.max(0, nextMidnightUTC - Date.now());
+}
+
+function NextPuzzleCountdown() {
+  const [ms, setMs] = useState(getMsUntilNextPuzzle);
+
+  useEffect(() => {
+    const id = setInterval(() => setMs(getMsUntilNextPuzzle()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const h = Math.floor(ms / 3_600_000);
+  const m = Math.floor((ms % 3_600_000) / 60_000);
+  const s = Math.floor((ms % 60_000) / 1_000);
+  const fmt = (n: number) => String(n).padStart(2, "0");
+
+  return (
+    <p className="text-xs text-gray-500 dark:text-gray-400">
+      Next puzzle in{" "}
+      <span className="font-mono font-semibold text-gray-700 dark:text-gray-200">
+        {fmt(h)}:{fmt(m)}:{fmt(s)}
+      </span>
+    </p>
+  );
+}
+
+// ── Share button ───────────────────────────────────────────────────────────
+
+function ShareButton({ shareText }: { shareText: string }) {
+  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
+
+  useEffect(() => {
+    if (status === "idle") return;
+    const t = setTimeout(() => setStatus("idle"), 2000);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  function handleCopy() {
+    navigator.clipboard
+      .writeText(shareText)
+      .then(() => setStatus("copied"))
+      .catch(() => setStatus("failed"));
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={`px-4 py-1.5 rounded-md text-sm font-medium border transition-colors ${
+        status === "copied"
+          ? "bg-green-600 border-green-600 text-white"
+          : status === "failed"
+          ? "bg-red-500 border-red-500 text-white"
+          : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:border-msu-red hover:text-msu-red"
+      }`}
+    >
+      {status === "copied" ? "Copied!" : status === "failed" ? "Copy failed" : "Copy Result"}
+    </button>
+  );
 }
 
 // ── Cell styling ───────────────────────────────────────────────────────────
@@ -376,7 +483,7 @@ export default function WordleClient({
   }
 
   // ── Persist result ─────────────────────────────────────────────────────
-  async function saveResult(isWin: boolean, attemptsUsed: number) {
+  async function saveResult(isWin: boolean, attemptsUsed: number, guessPattern: string) {
     if (!userId) return;
     try {
       await fetch("/api/games/wordle/result", {
@@ -388,6 +495,7 @@ export default function WordleClient({
           won: isWin,
           attempts: attemptsUsed,
           maxAttempts: MAX_GUESSES,
+          guessPattern,
         }),
       });
       router.refresh();
@@ -419,7 +527,7 @@ export default function WordleClient({
       if (isWin) setWon(true);
       if (!savedRef.current) {
         savedRef.current = true;
-        saveResult(isWin, newSubmitted.length);
+        saveResult(isWin, newSubmitted.length, encodeGuessPattern(newSubmitted));
       }
     }
   }
@@ -479,7 +587,20 @@ export default function WordleClient({
                   </p>
                 </>
               )}
-              <p className="text-xs text-gray-400 mt-3">Come back tomorrow for the next puzzle.</p>
+              <div className="mt-4 flex flex-col items-center gap-2">
+                <NextPuzzleCountdown />
+                {todayResult.guessPattern && (
+                  <ShareButton
+                    shareText={buildShareText(
+                      todayStr,
+                      todayResult.won,
+                      todayResult.attempts,
+                      todayResult.maxAttempts,
+                      todayResult.guessPattern
+                    )}
+                  />
+                )}
+              </div>
             </div>
             {stats && <PersonalStats stats={stats} />}
             <Leaderboard entries={leaderboard} />
@@ -528,19 +649,28 @@ export default function WordleClient({
               disabled={gameOver}
             />
 
-            {/* Post-game note */}
+            {/* Post-game: countdown + share */}
             {gameOver && (
-              <p className="text-xs text-gray-400 text-center -mt-1">
-                {userId
-                  ? "Result saved. Come back tomorrow for the next puzzle."
-                  : <>
-                      <Link href="/login" className="underline hover:text-msu-red">
-                        Log in
-                      </Link>{" "}
-                      to save your result and appear on the leaderboard.
-                    </>
-                }
-              </p>
+              <div className="flex flex-col items-center gap-2 -mt-1">
+                <NextPuzzleCountdown />
+                <ShareButton
+                  shareText={buildShareText(
+                    todayStr,
+                    won,
+                    submitted.length,
+                    MAX_GUESSES,
+                    encodeGuessPattern(submitted)
+                  )}
+                />
+                {!userId && (
+                  <p className="text-xs text-gray-400 text-center">
+                    <Link href="/login" className="underline hover:text-msu-red">
+                      Log in
+                    </Link>{" "}
+                    to save your result and appear on the leaderboard.
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Color legend */}

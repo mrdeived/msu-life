@@ -10,14 +10,14 @@ export default async function BeaverWordlePage() {
   const answer = getDailyAnswer(todayStr);
 
   // Check if the authenticated user already completed today's puzzle
-  let todayResult: { won: boolean; attempts: number; maxAttempts: number } | null = null;
+  let todayResult: { won: boolean; attempts: number; maxAttempts: number; guessPattern: string } | null = null;
   let stats: WordleStats | null = null;
 
   if (user) {
     // Fetch all of the user's results in one query (used for both today-check and stats)
     const allResults = await prisma.wordleResult.findMany({
       where: { userId: user.id },
-      select: { puzzleDate: true, won: true, attempts: true, maxAttempts: true },
+      select: { puzzleDate: true, won: true, attempts: true, maxAttempts: true, guessPattern: true },
       orderBy: { puzzleDate: "asc" },
     });
 
@@ -27,6 +27,7 @@ export default async function BeaverWordlePage() {
         won: todayRecord.won,
         attempts: todayRecord.attempts,
         maxAttempts: todayRecord.maxAttempts,
+        guessPattern: todayRecord.guessPattern,
       };
     }
 

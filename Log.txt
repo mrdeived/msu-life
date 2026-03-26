@@ -1573,3 +1573,23 @@ Verification:
 Beaver Wordle now includes an on-screen keyboard, clearer gameplay feedback, improved board readability, and a more polished daily game experience across desktop and mobile layouts.
 
 ---
+
+## Entry 063 — Beaver Wordle: Share Results and Next Puzzle Countdown
+
+Date:
+2026-03-25
+
+Summary:
+- Added a shareable Beaver Wordle result summary that hides the answer word
+- Added a copy action for completed daily Beaver Wordle results
+- Added a countdown showing when the next Beaver Wordle puzzle becomes available
+- Kept the daily puzzle, leaderboard, and personal stats flow compatible with the new completion features
+
+Commands:
+npx prisma migrate dev
+npm run lint
+
+Verification:
+Completed Beaver Wordle sessions can now generate a shareable result summary without revealing the answer, users can copy their result, and the page shows a countdown to the next daily puzzle after completion.
+
+---

@@ -19,6 +19,7 @@ export async function POST(request: Request) {
     won: boolean;
     attempts: number;
     maxAttempts: number;
+    guessPattern: string;
   };
   try {
     body = await request.json();
@@ -26,13 +27,14 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { puzzleDate, answer, won, attempts, maxAttempts } = body;
+  const { puzzleDate, answer, won, attempts, maxAttempts, guessPattern } = body;
   if (
     typeof puzzleDate !== "string" ||
     typeof answer !== "string" ||
     typeof won !== "boolean" ||
     typeof attempts !== "number" ||
-    typeof maxAttempts !== "number"
+    typeof maxAttempts !== "number" ||
+    typeof guessPattern !== "string"
   ) {
     return Response.json({ error: "Invalid payload" }, { status: 400 });
   }
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
   }
 
   const result = await prisma.wordleResult.create({
-    data: { userId: user.id, puzzleDate, answer, won, attempts, maxAttempts },
+    data: { userId: user.id, puzzleDate, answer, won, attempts, maxAttempts, guessPattern },
   });
 
   return Response.json({ ok: true, id: result.id });

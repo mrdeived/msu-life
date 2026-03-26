@@ -110,14 +110,15 @@ model EventBookmark {
 }
 
 model WordleResult {
-  id          String   @id @default(cuid())
-  userId      String
-  puzzleDate  String   @default("") // YYYY-MM-DD UTC date of the puzzle
-  answer      String
-  won         Boolean
-  attempts    Int
-  maxAttempts Int
-  createdAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  userId       String
+  puzzleDate   String   @default("") // YYYY-MM-DD UTC date of the puzzle
+  answer       String
+  won          Boolean
+  attempts     Int
+  maxAttempts  Int
+  guessPattern String   @default("") // compact row encoding: "APCAA|CCCCC" (A=absent,P=present,C=correct)
+  createdAt    DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
