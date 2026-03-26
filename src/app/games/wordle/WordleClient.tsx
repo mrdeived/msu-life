@@ -32,6 +32,13 @@ export interface LeaderboardEntry {
   createdAt: string;
 }
 
+export interface HistoryEntry {
+  puzzleDate: string;
+  won: boolean;
+  attempts: number;
+  maxAttempts: number;
+}
+
 interface TodayResult {
   won: boolean;
   attempts: number;
@@ -45,6 +52,7 @@ interface WordleClientProps {
   answer: string;
   todayResult: TodayResult | null;
   stats: WordleStats | null;
+  history: HistoryEntry[];
   leaderboard: LeaderboardEntry[];
 }
 
@@ -356,6 +364,40 @@ function PersonalStats({ stats }: { stats: WordleStats }) {
   );
 }
 
+// ── PersonalHistory ───────────────────────────────────────────────────────
+function PersonalHistory({ entries }: { entries: HistoryEntry[] }) {
+  if (entries.length === 0) return null;
+  return (
+    <section className="w-full bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5">
+      <h2 className="text-base font-semibold mb-1 text-msu-red">Your History</h2>
+      <p className="text-xs text-gray-400 mb-4">Last {entries.length} puzzle{entries.length !== 1 ? "s" : ""}</p>
+      <ol className="space-y-2">
+        {entries.map((entry) => (
+          <li key={entry.puzzleDate} className="flex items-center justify-between text-sm gap-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono shrink-0">
+              {entry.puzzleDate}
+            </span>
+            <span
+              className={`text-xs font-semibold px-1.5 py-0.5 rounded shrink-0 ${
+                entry.won
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+              }`}
+            >
+              {entry.won ? "Win" : "Loss"}
+            </span>
+            <span className="flex-1 text-right text-xs text-gray-500 dark:text-gray-400">
+              {entry.won
+                ? `${entry.attempts}/${entry.maxAttempts} attempts`
+                : "Not solved"}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
 // ── Leaderboard ───────────────────────────────────────────────────────────
 function Leaderboard({ entries }: { entries: LeaderboardEntry[] }) {
   return (
@@ -402,6 +444,7 @@ export default function WordleClient({
   answer,
   todayResult,
   stats,
+  history,
   leaderboard,
 }: WordleClientProps) {
   const router = useRouter();
@@ -604,6 +647,7 @@ export default function WordleClient({
             </div>
             {stats && <PersonalStats stats={stats} />}
             <Leaderboard entries={leaderboard} />
+            <PersonalHistory entries={history} />
           </div>
         ) : (
           /* ── Active game ─────────────────────────────────────────── */
@@ -688,6 +732,7 @@ export default function WordleClient({
 
             {stats && <PersonalStats stats={stats} />}
             <Leaderboard entries={leaderboard} />
+            <PersonalHistory entries={history} />
           </>
         )}
       </main>

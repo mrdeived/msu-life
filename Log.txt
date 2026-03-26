@@ -1593,3 +1593,23 @@ Verification:
 Completed Beaver Wordle sessions can now generate a shareable result summary without revealing the answer, users can copy their result, and the page shows a countdown to the next daily puzzle after completion.
 
 ---
+
+## Entry 064 — Beaver Wordle: Personal History
+
+Date:
+2026-03-25
+
+Summary:
+- Added a personal history section to the Beaver Wordle page showing the last 30 completed puzzles
+- Each history row displays the puzzle date, win/loss badge, and attempts used (or "Not solved" for losses)
+- History is ordered most-recent-first and derived from existing data with no additional database query
+- History section is hidden when there are no past results (empty state renders nothing)
+- History appears below the leaderboard in both the already-completed view and the post-game active view
+
+Commands:
+npm run lint
+
+Verification:
+Logged-in users see a personal history archive of their past Beaver Wordle results below the leaderboard after completing today's puzzle or when revisiting a completed day.
+
+---

@@ -2,7 +2,7 @@ import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import { getTodayStr, getDailyAnswer } from "./words";
 import { computeStats, type WordleStats } from "./stats";
-import WordleClient, { type LeaderboardEntry } from "./WordleClient";
+import WordleClient, { type LeaderboardEntry, type HistoryEntry } from "./WordleClient";
 
 export default async function BeaverWordlePage() {
   const user = await optionalAuth();
@@ -12,9 +12,10 @@ export default async function BeaverWordlePage() {
   // Check if the authenticated user already completed today's puzzle
   let todayResult: { won: boolean; attempts: number; maxAttempts: number; guessPattern: string } | null = null;
   let stats: WordleStats | null = null;
+  let history: HistoryEntry[] = [];
 
   if (user) {
-    // Fetch all of the user's results in one query (used for both today-check and stats)
+    // Fetch all of the user's results in one query (reused for today-check, stats, and history)
     const allResults = await prisma.wordleResult.findMany({
       where: { userId: user.id },
       select: { puzzleDate: true, won: true, attempts: true, maxAttempts: true, guessPattern: true },
@@ -32,6 +33,18 @@ export default async function BeaverWordlePage() {
     }
 
     stats = computeStats(allResults, todayStr);
+
+    // History: most recent first, capped at 30
+    history = allResults
+      .slice()
+      .reverse()
+      .slice(0, 30)
+      .map((r) => ({
+        puzzleDate: r.puzzleDate,
+        won: r.won,
+        attempts: r.attempts,
+        maxAttempts: r.maxAttempts,
+      }));
   }
 
   // Leaderboard: today's puzzle results only
@@ -66,6 +79,7 @@ export default async function BeaverWordlePage() {
       answer={answer}
       todayResult={todayResult}
       stats={stats}
+      history={history}
       leaderboard={leaderboard}
     />
   );
