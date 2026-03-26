@@ -18,7 +18,7 @@ export default async function BeaverWordlePage() {
     // Fetch all of the user's results in one query (reused for today-check, stats, and history)
     const allResults = await prisma.wordleResult.findMany({
       where: { userId: user.id },
-      select: { puzzleDate: true, won: true, attempts: true, maxAttempts: true, guessPattern: true },
+      select: { id: true, puzzleDate: true, won: true, attempts: true, maxAttempts: true, guessPattern: true },
       orderBy: { puzzleDate: "asc" },
     });
 
@@ -40,6 +40,7 @@ export default async function BeaverWordlePage() {
       .reverse()
       .slice(0, 30)
       .map((r) => ({
+        id: r.id,
         puzzleDate: r.puzzleDate,
         won: r.won,
         attempts: r.attempts,

@@ -1613,3 +1613,23 @@ Verification:
 Logged-in users see a personal history archive of their past Beaver Wordle results below the leaderboard after completing today's puzzle or when revisiting a completed day.
 
 ---
+
+## Entry 065 — Beaver Wordle: Past Result View
+
+Date:
+2026-03-25
+
+Summary:
+- Added the ability to open past Beaver Wordle history entries
+- Rendered read-only completed boards for saved Beaver Wordle results
+- Restricted past result access to the authenticated owner of each saved game
+- Preserved current daily gameplay, history, leaderboard, and personal stats behavior
+
+Commands:
+npx prisma migrate dev
+npm run lint
+
+Verification:
+Authenticated users can now open their past Beaver Wordle results and view a read-only completed board built from saved game data, while access remains restricted to the owner of each result.
+
+---

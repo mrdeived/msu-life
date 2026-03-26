@@ -118,6 +118,7 @@ model WordleResult {
   attempts     Int
   maxAttempts  Int
   guessPattern String   @default("") // compact row encoding: "APCAA|CCCCC" (A=absent,P=present,C=correct)
+  guesses      String   @default("") // pipe-separated guess words: "BEARS|CRANE|PLANT"
   createdAt    DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

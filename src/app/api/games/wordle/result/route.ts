@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     attempts: number;
     maxAttempts: number;
     guessPattern: string;
+    guesses?: string;
   };
   try {
     body = await request.json();
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { puzzleDate, answer, won, attempts, maxAttempts, guessPattern } = body;
+  const { puzzleDate, answer, won, attempts, maxAttempts, guessPattern, guesses } = body;
   if (
     typeof puzzleDate !== "string" ||
     typeof answer !== "string" ||
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
   }
 
   const result = await prisma.wordleResult.create({
-    data: { userId: user.id, puzzleDate, answer, won, attempts, maxAttempts, guessPattern },
+    data: { userId: user.id, puzzleDate, answer, won, attempts, maxAttempts, guessPattern, guesses: guesses ?? "" },
   });
 
   return Response.json({ ok: true, id: result.id });

@@ -33,6 +33,7 @@ export interface LeaderboardEntry {
 }
 
 export interface HistoryEntry {
+  id: string;
   puzzleDate: string;
   won: boolean;
   attempts: number;
@@ -76,6 +77,10 @@ function deriveKeyboardState(submitted: SubmittedRow[]): Record<string, LetterSt
 // ── Guess pattern helpers ──────────────────────────────────────────────────
 // Compact encoding: one char per letter (C=correct, P=present, A=absent),
 // rows separated by "|".  Example: "AAPAP|CCCCC"
+
+function encodeGuesses(submitted: SubmittedRow[]): string {
+  return submitted.map((row) => row.letters.map((l) => l.letter).join("")).join("|");
+}
 
 function encodeGuessPattern(submitted: SubmittedRow[]): string {
   return submitted
@@ -373,24 +378,30 @@ function PersonalHistory({ entries }: { entries: HistoryEntry[] }) {
       <p className="text-xs text-gray-400 mb-4">Last {entries.length} puzzle{entries.length !== 1 ? "s" : ""}</p>
       <ol className="space-y-2">
         {entries.map((entry) => (
-          <li key={entry.puzzleDate} className="flex items-center justify-between text-sm gap-2">
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono shrink-0">
-              {entry.puzzleDate}
-            </span>
-            <span
-              className={`text-xs font-semibold px-1.5 py-0.5 rounded shrink-0 ${
-                entry.won
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-              }`}
+          <li key={entry.puzzleDate}>
+            <Link
+              href={`/games/wordle/history/${entry.id}`}
+              className="flex items-center justify-between text-sm gap-2 py-1 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors px-1 -mx-1"
             >
-              {entry.won ? "Win" : "Loss"}
-            </span>
-            <span className="flex-1 text-right text-xs text-gray-500 dark:text-gray-400">
-              {entry.won
-                ? `${entry.attempts}/${entry.maxAttempts} attempts`
-                : "Not solved"}
-            </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-mono shrink-0">
+                {entry.puzzleDate}
+              </span>
+              <span
+                className={`text-xs font-semibold px-1.5 py-0.5 rounded shrink-0 ${
+                  entry.won
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                }`}
+              >
+                {entry.won ? "Win" : "Loss"}
+              </span>
+              <span className="flex-1 text-right text-xs text-gray-500 dark:text-gray-400">
+                {entry.won
+                  ? `${entry.attempts}/${entry.maxAttempts} attempts`
+                  : "Not solved"}
+              </span>
+              <span className="text-xs text-gray-400 dark:text-gray-600">›</span>
+            </Link>
           </li>
         ))}
       </ol>
@@ -526,7 +537,7 @@ export default function WordleClient({
   }
 
   // ── Persist result ─────────────────────────────────────────────────────
-  async function saveResult(isWin: boolean, attemptsUsed: number, guessPattern: string) {
+  async function saveResult(isWin: boolean, attemptsUsed: number, guessPattern: string, guesses: string) {
     if (!userId) return;
     try {
       await fetch("/api/games/wordle/result", {
@@ -539,6 +550,7 @@ export default function WordleClient({
           attempts: attemptsUsed,
           maxAttempts: MAX_GUESSES,
           guessPattern,
+          guesses,
         }),
       });
       router.refresh();
@@ -570,7 +582,7 @@ export default function WordleClient({
       if (isWin) setWon(true);
       if (!savedRef.current) {
         savedRef.current = true;
-        saveResult(isWin, newSubmitted.length, encodeGuessPattern(newSubmitted));
+        saveResult(isWin, newSubmitted.length, encodeGuessPattern(newSubmitted), encodeGuesses(newSubmitted));
       }
     }
   }
