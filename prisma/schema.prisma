@@ -35,7 +35,8 @@ model User {
   bookmarks     EventBookmark[]
   likes         EventLike[]
   createdEvents Event[]
-  wordleResults WordleResult[]
+  wordleResults   WordleResult[]
+  scheduledWords  WordleScheduledWord[]
 }
 
 model EmailOtp {
@@ -126,6 +127,19 @@ model WordleResult {
   @@index([userId])
   @@index([puzzleDate])
   @@index([createdAt])
+}
+
+model WordleScheduledWord {
+  id          String   @id @default(cuid())
+  puzzleDate  String   @unique // YYYY-MM-DD — one managed word per day
+  answer      String   // 5-letter uppercase word
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([puzzleDate])
 }
 
 model EventLike {

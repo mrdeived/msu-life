@@ -1,13 +1,14 @@
 import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
-import { getTodayStr, getDailyAnswer } from "./words";
+import { getTodayStr } from "./words";
+import { resolveOfficialAnswer } from "./resolveAnswer";
 import { computeStats, type WordleStats } from "./stats";
 import WordleClient, { type LeaderboardEntry, type HistoryEntry } from "./WordleClient";
 
 export default async function BeaverWordlePage() {
   const user = await optionalAuth();
   const todayStr = getTodayStr();
-  const answer = getDailyAnswer(todayStr);
+  const answer = await resolveOfficialAnswer(todayStr);
 
   // Check if the authenticated user already completed today's puzzle
   let todayResult: { won: boolean; attempts: number; maxAttempts: number; guessPattern: string } | null = null;

@@ -1710,3 +1710,23 @@ Verification:
 The app now has a clearer mini-games structure with Beaver Wordle as the first supported game, a working /games hub, and no regressions in existing Beaver Wordle behavior.
 
 ---
+
+## Entry 070 — Beaver Wordle: Admin Daily Word Management
+
+Date:
+2026-03-25
+
+Summary:
+- Added admin-managed Beaver Wordle daily word scheduling without requiring redeploys
+- Updated daily answer resolution to prefer scheduled admin words before fallback selection
+- Restricted daily word management to trusted admin access
+- Preserved Beaver Wordle daily gameplay, validation, and historical consistency with the new answer source flow
+
+Commands:
+npx prisma migrate dev
+npm run lint
+
+Verification:
+Trusted admins can now schedule Beaver Wordle daily words through the app, scheduled words override fallback selection for their assigned days, non-admin users cannot access the management route, and Beaver Wordle continues working normally when no scheduled word exists.
+
+---

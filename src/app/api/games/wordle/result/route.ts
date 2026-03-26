@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { getSessionFromRequest } from "@/lib/auth";
 import { evaluateGuess, type EvaluatedLetter } from "@/app/games/wordle/evaluate";
-import { getTodayStr, getDailyAnswer } from "@/app/games/wordle/words";
+import { getTodayStr } from "@/app/games/wordle/words";
+import { resolveOfficialAnswer } from "@/app/games/wordle/resolveAnswer";
 
 const MAX_GUESSES = 6;
 const WORD_LENGTH = 5;
@@ -69,7 +70,8 @@ export async function POST(request: Request) {
   }
 
   // ── Server-side game evaluation ──────────────────────────────────────────
-  const answer = getDailyAnswer(puzzleDate);
+  // Scheduled admin word takes priority; falls back to deterministic selection
+  const answer = await resolveOfficialAnswer(puzzleDate);
   const evaluations = normalized.map((g) => evaluateGuess(g, answer));
 
   const lastRow = evaluations[evaluations.length - 1];
