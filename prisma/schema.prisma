@@ -38,6 +38,7 @@ model User {
   wordleResults   WordleResult[]
   scheduledWords  WordleScheduledWord[]
   comments        Comment[]
+  eventComments   EventComment[]
 }
 
 model EmailOtp {
@@ -66,6 +67,7 @@ model Event {
   attendances EventAttendance[]
   bookmarks   EventBookmark[]
   likes       EventLike[]
+  comments    EventComment[]
 
   @@index([startAt])
   @@index([isPublished])
@@ -172,4 +174,20 @@ model EventLike {
   @@unique([userId, eventId])
   @@index([eventId])
   @@index([userId])
+}
+
+model EventComment {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([createdAt])
 }

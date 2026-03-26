@@ -3,6 +3,7 @@ import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
 import EventActionRow from "@/components/EventActionRow";
+import EventCommentSection from "@/components/EventCommentSection";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await optionalAuth();
@@ -164,12 +165,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
 
             {/* Description */}
             {event.description && (
-              <div className="px-5 py-4">
+              <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
                 <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
                   {event.description}
                 </p>
               </div>
             )}
+
+            {/* Comments */}
+            <EventCommentSection eventId={event.id} isAuthenticated={!!user} />
           </article>
         )}
       </main>
