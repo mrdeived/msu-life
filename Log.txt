@@ -1730,3 +1730,23 @@ Verification:
 Trusted admins can now schedule Beaver Wordle daily words through the app, scheduled words override fallback selection for their assigned days, non-admin users cannot access the management route, and Beaver Wordle continues working normally when no scheduled word exists.
 
 ---
+
+## Entry 071 — Posts: Comments System
+
+Date:
+2026-03-26
+
+Summary:
+- Added Comment model to Prisma schema linked to Announcement and User with cascade deletes
+- Created GET/POST API route at /api/announcements/[id]/comments (auth required for POST)
+- Built CommentSection client component: lists comments chronologically, submit form with char counter, optimistic append, error display, and "Sign in to comment" fallback for guests
+- Integrated CommentSection into the announcement detail page below post body
+
+Commands:
+npx prisma migrate dev
+npm run lint
+
+Verification:
+Users can view and post comments under announcements, comments persist in the database, and display correctly in chronological order.
+
+---

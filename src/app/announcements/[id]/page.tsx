@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
+import CommentSection from "@/components/CommentSection";
 
 export default async function AnnouncementDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAuth();
+  const session = await requireAuth();
 
   const { id } = await params;
 
@@ -43,6 +44,7 @@ export default async function AnnouncementDetailPage({ params }: { params: Promi
                 {announcement.body}
               </p>
             </div>
+            <CommentSection postId={announcement.id} isAuthenticated={!!session} />
           </article>
         )}
       </main>

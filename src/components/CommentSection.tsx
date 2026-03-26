@@ -1,0 +1,156 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+interface CommentUser {
+  firstName: string | null;
+  lastName: string | null;
+  username: string | null;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: CommentUser;
+}
+
+function displayName(user: CommentUser): string {
+  if (user.firstName || user.lastName) {
+    return [user.firstName, user.lastName].filter(Boolean).join(" ");
+  }
+  return user.username ?? "User";
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+export default function CommentSection({
+  postId,
+  isAuthenticated,
+}: {
+  postId: string;
+  isAuthenticated: boolean;
+}) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [text, setText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    fetch(`/api/announcements/${postId}/comments`)
+      .then((r) => r.json())
+      .then((data: Comment[]) => setComments(data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [postId]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!text.trim() || submitting) return;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/announcements/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text.trim() }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError((data as { error?: string }).error ?? "Failed to post comment");
+        return;
+      }
+
+      const newComment: Comment = await res.json();
+      setComments((prev) => [...prev, newComment]);
+      setText("");
+      textareaRef.current?.focus();
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <section className="border-t border-gray-200 dark:border-gray-800 px-5 sm:px-6 py-5 space-y-4">
+      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+        Comments {!loading && `(${comments.length})`}
+      </h3>
+
+      {loading ? (
+        <p className="text-sm text-gray-400 dark:text-gray-500">Loading comments…</p>
+      ) : comments.length === 0 ? (
+        <p className="text-sm text-gray-400 dark:text-gray-500">No comments yet. Be the first!</p>
+      ) : (
+        <ul className="space-y-3">
+          {comments.map((c) => (
+            <li
+              key={c.id}
+              className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 space-y-1"
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">
+                  {displayName(c.user)}
+                </span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                  {formatDate(c.createdAt)}
+                </span>
+              </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                {c.content}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {isAuthenticated ? (
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <textarea
+            ref={textareaRef}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write a comment…"
+            rows={3}
+            maxLength={500}
+            className="w-full text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 placeholder-gray-400 px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-msu-red"
+          />
+          {error && (
+            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+          )}
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-gray-400">{text.length}/500</span>
+            <button
+              type="submit"
+              disabled={!text.trim() || submitting}
+              className="px-4 py-1.5 text-sm font-medium rounded-lg bg-msu-red text-msu-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? "Posting…" : "Post"}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          <a href="/login" className="text-msu-red hover:underline font-medium">
+            Sign in
+          </a>{" "}
+          to comment.
+        </p>
+      )}
+    </section>
+  );
+}

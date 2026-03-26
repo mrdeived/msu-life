@@ -37,6 +37,7 @@ model User {
   createdEvents Event[]
   wordleResults   WordleResult[]
   scheduledWords  WordleScheduledWord[]
+  comments        Comment[]
 }
 
 model EmailOtp {
@@ -72,13 +73,30 @@ model Event {
 }
 
 model Announcement {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   title     String
   body      String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  comments  Comment[]
 
   @@index([isActive])
+  @@index([createdAt])
+}
+
+model Comment {
+  id             String       @id @default(cuid())
+  postId         String
+  userId         String
+  content        String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  announcement   Announcement @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
   @@index([createdAt])
 }
 
