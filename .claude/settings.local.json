@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head:*)",
+      "Bash(npx next:*)",
+      "Bash(npm run:*)",
+      "Bash(echo \"exit: $?\")"
+    ]
+  }
+}

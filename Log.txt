@@ -1790,3 +1790,21 @@ Verification:
 Event posts now display comments below the action row, authenticated users can add comments, the first 3 comments are shown by default, and Show more appears when additional comments exist.
 
 ---
+## Entry 074 — Cloudinary Upload Foundation
+
+Date:
+2026-04-07
+
+Summary:
+- Added Cloudinary environment variable placeholders to the project template
+- Created a frontend helper for direct image uploads to Cloudinary
+- Prepared the codebase for future event image support without changing current event flows or production UI
+
+Commands:
+npx next build
+
+Verification:
+The project builds successfully after adding the Cloudinary upload helper, with no changes to existing routes, forms, or event behavior.
+
+---
+
