@@ -1808,3 +1808,23 @@ The project builds successfully after adding the Cloudinary upload helper, with 
 
 ---
 
+## Entry 075 — Events: Image Fields Added
+
+Date:
+2026-04-08
+
+Summary:
+- Extended the Event model with optional imageUrl and imagePublicId fields
+- Kept both fields optional so existing events remain fully compatible
+- Prepared the database schema for future Cloudinary-backed event image uploads
+- Left all current event creation, feed, and event detail flows unchanged in this step
+
+Commands:
+npx prisma migrate dev --name add_event_images
+npx next build
+
+Verification:
+The schema now supports optional event image metadata without affecting existing event records or current production behavior.
+
+---
+
