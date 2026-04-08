@@ -1828,3 +1828,23 @@ The schema now supports optional event image metadata without affecting existing
 
 ---
 
+## Entry 076 — Events: Create Flow Supports Optional Images
+
+Date:
+2026-04-08
+
+Summary:
+- Added optional image selection to the event creation flow
+- Added client-side preview before submission
+- Uploaded selected images directly to Cloudinary using the existing helper
+- Saved imageUrl and imagePublicId on new Event records when an image is provided
+- Preserved the existing event creation flow for events without images
+
+Commands:
+npx next build
+
+Verification:
+Admins can now create events with or without an image. When an image is selected, it uploads to Cloudinary first and the new event stores the returned image metadata.
+
+---
+
