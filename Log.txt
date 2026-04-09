@@ -1868,3 +1868,22 @@ Events can now be created with or without images. No server errors occur when im
 
 ---
 
+## Entry 078 — Events: Render Uploaded Images
+
+Date:
+2026-04-08
+
+Summary:
+- Added event image rendering to the feed when imageUrl is present
+- Added event image rendering to the event detail page near the top of the layout
+- Preserved full compatibility for events without images
+- Kept the existing event interactions and detail sections intact
+
+Commands:
+npx next build
+
+Verification:
+Events with imageUrl now display their uploaded image in the feed and on the detail page, while events without images continue to render normally.
+
+---
+

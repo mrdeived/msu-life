@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import FeedActionRow from "@/components/FeedActionRow";
@@ -10,7 +11,7 @@ export default async function FeedPage() {
     where: { isPublished: true, startAt: { gt: new Date() } },
     orderBy: { startAt: "asc" },
     take: 20,
-    select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true },
+    select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, imageUrl: true },
   });
 
   let likesById = new Map<string, number>();
@@ -96,7 +97,19 @@ export default async function FeedPage() {
               >
                 {/* Banner */}
                 <div className="relative bg-gradient-to-br from-msu-red to-msu-red/70 flex items-end h-28 sm:h-auto sm:aspect-[4/5]">
-                  <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,.15)_10px,rgba(255,255,255,.15)_20px)]" />
+                  {e.imageUrl ? (
+                    <Image
+                      src={e.imageUrl}
+                      alt={e.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 512px"
+                      className="object-cover"
+                      priority={false}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,.15)_10px,rgba(255,255,255,.15)_20px)]" />
+                  )}
+                  <div className={`absolute inset-0 ${e.imageUrl ? "bg-gradient-to-t from-black/70 via-black/20 to-transparent" : ""}`} />
                   <h2 className="relative px-4 pb-3 text-base sm:text-lg font-bold text-msu-white leading-tight drop-shadow-sm line-clamp-2">
                     {e.title}
                   </h2>

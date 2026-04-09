@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
@@ -14,7 +15,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
   const baseQueries = [
     prisma.event.findFirst({
       where: { id, isPublished: true },
-      select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, createdAt: true, updatedAt: true, createdBy: { select: { username: true, email: true } } },
+      select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, createdAt: true, updatedAt: true, imageUrl: true, createdBy: { select: { username: true, email: true } } },
     }),
     prisma.eventAttendance.count({ where: { eventId: id } }),
     prisma.eventBookmark.count({ where: { eventId: id } }),
@@ -81,8 +82,20 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         ) : (
           <article className="bg-white dark:bg-gray-900 sm:rounded-lg border-y sm:border border-gray-200 dark:border-gray-800 overflow-hidden">
             {/* Banner */}
-            <div className="relative h-36 bg-gradient-to-br from-msu-red to-msu-red/70 flex items-end">
-              <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,.15)_10px,rgba(255,255,255,.15)_20px)]" />
+            <div className={`relative bg-gradient-to-br from-msu-red to-msu-red/70 flex items-end ${event.imageUrl ? "h-52 sm:h-64" : "h-36"}`}>
+              {event.imageUrl ? (
+                <Image
+                  src={event.imageUrl}
+                  alt={event.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, 512px"
+                  className="object-cover"
+                  priority
+                />
+              ) : (
+                <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,rgba(255,255,255,.15)_10px,rgba(255,255,255,.15)_20px)]" />
+              )}
+              <div className={`absolute inset-0 ${event.imageUrl ? "bg-gradient-to-t from-black/75 via-black/25 to-transparent" : ""}`} />
               <div className="relative px-5 pb-4">
                 <h2 className="text-xl font-bold text-msu-white leading-tight drop-shadow-sm">
                   {event.title}
