@@ -1848,3 +1848,23 @@ Admins can now create events with or without an image. When an image is selected
 
 ---
 
+## Entry 077 — Fix: Event Creation Supports Image Fields
+
+Date:
+2026-04-08
+
+Summary:
+- Updated event creation backend to accept optional imageUrl and imagePublicId
+- Extended validation schema to include image fields
+- Updated Prisma create call to safely persist image metadata
+- Fixed 500 error when creating events with images
+- Preserved backward compatibility for events without images
+
+Commands:
+npx next build
+
+Verification:
+Events can now be created with or without images. No server errors occur when image fields are included.
+
+---
+

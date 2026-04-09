@@ -4,7 +4,8 @@
       "Bash(head:*)",
       "Bash(npx next:*)",
       "Bash(npm run:*)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")"
     ]
   }
 }

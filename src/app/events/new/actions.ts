@@ -51,20 +51,26 @@ export async function createEventAction(
     if (endAt <= startAt) return { error: "End must be after start" };
   }
 
-  const event = await prisma.event.create({
-    data: {
-      title,
-      location,
-      description,
-      startAt,
-      endAt,
-      isPublished: true,
-      createdById: user.id,
-      imageUrl,
-      imagePublicId,
-    },
-    select: { id: true },
-  });
+  let event: { id: string };
+  try {
+    event = await prisma.event.create({
+      data: {
+        title,
+        location,
+        description,
+        startAt,
+        endAt,
+        isPublished: true,
+        createdById: user.id,
+        imageUrl: imageUrl ?? null,
+        imagePublicId: imagePublicId ?? null,
+      },
+      select: { id: true },
+    });
+  } catch (err) {
+    console.error("[createEventAction] prisma.event.create failed:", err);
+    return { error: "Failed to create event. Please try again." };
+  }
 
   return { id: event.id };
 }
