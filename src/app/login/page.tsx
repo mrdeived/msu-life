@@ -51,6 +51,7 @@ export default function LoginPage() {
         setError(data.error || "Verification failed");
         return;
       }
+      router.refresh();
       router.push("/home");
     } catch {
       setError("Network error");

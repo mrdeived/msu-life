@@ -47,7 +47,7 @@ export default function BottomNav() {
         if (!cancelled) setIsAuthed(false);
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [pathname]);
 
   // Hide on OTP verify and API routes (but show on /login)
   if (pathname.startsWith("/verify") || pathname.startsWith("/api")) {

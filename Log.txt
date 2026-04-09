@@ -1906,3 +1906,22 @@ Users now see immediate visual feedback during navigation, route loading states 
 
 ---
 
+## Entry 080 — Fix: BottomNav Refreshes After Auth Changes
+
+Date:
+2026-04-08
+
+Summary:
+- Fixed the BottomNav so it updates immediately after login and logout
+- Added proper App Router refresh behavior after auth state changes
+- Removed the need for a manual page refresh to see the correct navigation state
+- Preserved all existing login, logout, and role-based nav behavior
+
+Commands:
+npx next build
+
+Verification:
+After login or logout, the BottomNav now immediately reflects the correct authenticated state without requiring a manual refresh.
+
+---
+
