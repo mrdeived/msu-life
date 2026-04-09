@@ -31,6 +31,44 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Page entry animation — replays on every navigation via template.tsx */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: page-enter 0.22s ease-out both;
+}
+
+/* Top navigation progress bar */
+@keyframes nav-progress-indeterminate {
+  0%   { left: -40%; width: 40%; }
+  60%  { left: 60%;  width: 40%; }
+  100% { left: 100%; width: 40%; }
+}
+
+.nav-progress-bar {
+  animation: nav-progress-indeterminate 1s ease-in-out infinite;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(156, 163, 175, 0.15) 25%,
+    rgba(156, 163, 175, 0.30) 50%,
+    rgba(156, 163, 175, 0.15) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
 /* Wordle — shake active row on invalid submission */
 @keyframes wordle-shake {
   0%, 100% { transform: translateX(0); }

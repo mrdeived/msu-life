@@ -1887,3 +1887,22 @@ Events with imageUrl now display their uploaded image in the feed and on the det
 
 ---
 
+## Entry 079 — UI: Navigation Loading Feedback and Page Transitions
+
+Date:
+2026-04-08
+
+Summary:
+- Added global navigation feedback for page transitions
+- Added route-level loading states for major app pages
+- Introduced lightweight page entry animation for smoother navigation feel
+- Improved perceived responsiveness without changing core app behavior
+
+Commands:
+npx next build
+
+Verification:
+Users now see immediate visual feedback during navigation, route loading states appear for major pages, and page transitions feel smoother across the app.
+
+---
+
