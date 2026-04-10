@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { createEventAction } from "./actions";
+import { toast } from "@/lib/toast";
 
 export default function CreateEventForm() {
   const router = useRouter();
@@ -44,7 +45,9 @@ export default function CreateEventForm() {
         try {
           uploaded = await uploadImageToCloudinary(selectedFile);
         } catch {
-          setError("Image upload failed. Please try again or remove the image.");
+          const msg = "Image upload failed. Please try again or remove the image.";
+          setError(msg);
+          toast(msg, "error");
           setSubmitting(false);
           return;
         }
@@ -56,13 +59,17 @@ export default function CreateEventForm() {
 
       if ("error" in result) {
         setError(result.error);
+        toast(result.error, "error");
         setSubmitting(false);
         return;
       }
 
+      toast("Event created");
       router.push(`/event/${result.id}`);
     } catch {
-      setError("Something went wrong. Please try again.");
+      const msg = "Something went wrong. Please try again.";
+      setError(msg);
+      toast(msg, "error");
       setSubmitting(false);
     }
   }

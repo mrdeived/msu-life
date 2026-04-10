@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Heart, Bookmark, CalendarCheck } from "lucide-react";
 import LoginRequiredModal from "@/components/LoginRequiredModal";
+import { toast } from "@/lib/toast";
 
 interface Props {
   eventId: string;
@@ -37,6 +38,12 @@ export default function FeedActionRow({
   const [bookmarkCount, setBookmarkCount] = useState(initialBookmarkCount);
   const [attendeeCount, setAttendeeCount] = useState(initialAttendeeCount);
 
+  const toastMessages: Record<string, [string, string]> = {
+    like:     ["Added to likes", "Removed from likes"],
+    bookmark: ["Saved to bookmarks", "Removed from bookmarks"],
+    attend:   ["You're attending this event", "Removed from attending"],
+  };
+
   async function toggle(
     action: "like" | "bookmark" | "attend",
     active: boolean,
@@ -57,12 +64,15 @@ export default function FeedActionRow({
         method: active ? "DELETE" : "POST",
       });
       if (!res.ok) throw new Error(`${action} failed`);
+      const [addMsg, removeMsg] = toastMessages[action];
+      toast(active ? removeMsg : addMsg);
       router.refresh();
     } catch (err) {
       // Revert on failure
       console.error(err);
       setActive(active);
       setCount((n) => n + (active ? 1 : -1));
+      toast("Something went wrong", "error");
     } finally {
       setLoading(false);
     }

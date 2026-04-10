@@ -1985,3 +1985,22 @@ Users can now search, filter, and sort events from the Events Browse tab without
 
 ---
 
+## Entry 084 — UI: Toast Notifications and Microinteractions
+
+Date:
+2026-04-08
+
+Summary:
+- Added a global toast notification system for success and error feedback
+- Integrated toast messages into key user actions like login, logout, event creation, likes, bookmarks, attendance, and comments
+- Added lightweight loading and interaction feedback to improve perceived responsiveness
+- Preserved all existing app behavior while making actions feel clearer and more polished
+
+Commands:
+npx next build
+
+Verification:
+Users now receive immediate visual feedback for key actions through toasts and lightweight interaction states across the app.
+
+---
+

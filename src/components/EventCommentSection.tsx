@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toast } from "@/lib/toast";
 
 const PREVIEW_COUNT = 3;
 const MAX_COMMENT_LENGTH = 500;
@@ -77,20 +78,25 @@ export default function EventCommentSection({
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error ?? "Failed to post comment");
+        const msg = (data as { error?: string }).error ?? "Failed to post comment";
+        setError(msg);
+        toast(msg, "error");
         return;
       }
 
       const newComment: EventComment = await res.json();
       setComments((prev) => [...prev, newComment]);
       setText("");
+      toast("Comment posted");
       // Keep expanded if we already were, or if the new comment pushes beyond preview
       if (!expanded && comments.length >= PREVIEW_COUNT) {
         setExpanded(true);
       }
       textareaRef.current?.focus();
     } catch {
-      setError("Something went wrong. Please try again.");
+      const msg = "Something went wrong. Please try again.";
+      setError(msg);
+      toast(msg, "error");
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toast } from "@/lib/toast";
 
 interface CommentUser {
   firstName: string | null;
@@ -70,16 +71,21 @@ export default function CommentSection({
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setError((data as { error?: string }).error ?? "Failed to post comment");
+        const msg = (data as { error?: string }).error ?? "Failed to post comment";
+        setError(msg);
+        toast(msg, "error");
         return;
       }
 
       const newComment: Comment = await res.json();
       setComments((prev) => [...prev, newComment]);
       setText("");
+      toast("Comment posted");
       textareaRef.current?.focus();
     } catch {
-      setError("Something went wrong. Please try again.");
+      const msg = "Something went wrong. Please try again.";
+      setError(msg);
+      toast(msg, "error");
     } finally {
       setSubmitting(false);
     }

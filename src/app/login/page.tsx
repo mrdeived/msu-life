@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "@/lib/toast";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Failed to send code");
+        toast(data.error || "Failed to send code", "error");
         return;
       }
       setStep("code");
@@ -49,8 +51,10 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || "Verification failed");
+        toast(data.error || "Verification failed", "error");
         return;
       }
+      toast("Logged in successfully");
       router.refresh();
       router.push("/home");
     } catch {
