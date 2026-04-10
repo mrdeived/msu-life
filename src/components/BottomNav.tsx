@@ -3,32 +3,23 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Newspaper, CalendarCheck, SquarePen, User, LogIn } from "lucide-react";
+import { Home, CalendarDays, MessageCircle, User } from "lucide-react";
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
-  adminOnly?: boolean;
 }
 
-const authedItems: NavItem[] = [
-  { href: "/home", label: "Home", icon: <Home size={22} /> },
-  { href: "/feed", label: "Browse", icon: <Newspaper size={22} /> },
-  { href: "/my-events", label: "My Events", icon: <CalendarCheck size={22} /> },
-  { href: "/my-created-events", label: "Created", icon: <SquarePen size={22} />, adminOnly: true },
+const navItems: NavItem[] = [
+  { href: "/home",    label: "Home",    icon: <Home size={22} /> },
+  { href: "/events",  label: "Events",  icon: <CalendarDays size={22} /> },
+  { href: "/chat",    label: "Chat",    icon: <MessageCircle size={22} /> },
   { href: "/profile", label: "Profile", icon: <User size={22} /> },
-];
-
-const guestItems: NavItem[] = [
-  { href: "/home", label: "Home", icon: <Home size={22} /> },
-  { href: "/feed", label: "Browse", icon: <Newspaper size={22} /> },
-  { href: "/login", label: "Login", icon: <LogIn size={22} /> },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -38,28 +29,18 @@ export default function BottomNav() {
         if (!r.ok) throw new Error();
         return r.json();
       })
-      .then((data) => {
-        if (cancelled) return;
-        setIsAuthed(true);
-        setIsAdmin(!!data.isAdmin);
-      })
-      .catch(() => {
-        if (!cancelled) setIsAuthed(false);
-      });
+      .then(() => { if (!cancelled) setIsAuthed(true); })
+      .catch(() => { if (!cancelled) setIsAuthed(false); });
     return () => { cancelled = true; };
   }, [pathname]);
 
-  // Hide on OTP verify and API routes (but show on /login)
+  // Hide on verify and API routes
   if (pathname.startsWith("/verify") || pathname.startsWith("/api")) {
     return null;
   }
 
-  // Wait for auth check
+  // Wait for initial auth check
   if (isAuthed === null) return null;
-
-  const items = isAuthed
-    ? authedItems.filter((i) => !i.adminOnly || isAdmin)
-    : guestItems;
 
   return (
     <nav
@@ -71,7 +52,7 @@ export default function BottomNav() {
         transition-shadow hover:shadow-xl"
       aria-label="Main navigation"
     >
-      {items.map((item) => {
+      {navItems.map((item) => {
         const active = pathname === item.href || pathname.startsWith(item.href + "/");
         return (
           <Link

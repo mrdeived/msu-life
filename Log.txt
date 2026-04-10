@@ -1925,3 +1925,23 @@ After login or logout, the BottomNav now immediately reflects the correct authen
 
 ---
 
+## Entry 081 — Navigation: Events Hub + Simplified Bottom Nav
+
+Date:
+2026-04-08
+
+Summary:
+- Simplified bottom navigation to Home, Events, Chat, and Profile
+- Created a centralized Events hub page with tabs for Browse, Saved, and Create
+- Reused existing feed and bookmarks logic inside the new Events section
+- Added a Chat placeholder page for future feature expansion
+- Preserved all existing routes and functionality
+
+Commands:
+npx next build
+
+Verification:
+Users can now access all event-related functionality through the Events tab. Bottom navigation is simplified and consistent across the app.
+
+---
+
