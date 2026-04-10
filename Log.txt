@@ -2045,3 +2045,26 @@ Authenticated users can now access a real Chat MVP, view conversations, open a c
 
 ---
 
+
+## Entry 087 — Social: Followers System Foundation
+
+Date:
+2026-04-07
+
+Summary:
+- Added Follow model to schema with named relations (UserFollowing / UserFollowers)
+- Created public user profile page at /users/[username] with follower and following lists
+- Added Follow/Unfollow button with optimistic toggle and toast feedback
+- Added POST/DELETE API route at /api/users/[id]/follow
+- Updated own Profile page to show follower and following counts
+- Prevented self-following at the API level
+- All foreign keys cascade on user delete
+
+Commands:
+npx prisma migrate deploy
+npx next build
+
+Verification:
+Users can visit /users/[username] to view a public profile, follow or unfollow the user, and see follower and following lists. The own Profile page now shows live follower and following counts.
+
+---

@@ -15,7 +15,7 @@ export default async function ProfilePage({
   const params = await searchParams;
   const user = await prisma.user.findUnique({
     where: { id: authUser.id },
-    select: { id: true, email: true, role: true, firstName: true, lastName: true, username: true },
+    select: { id: true, email: true, role: true, firstName: true, lastName: true, username: true, _count: { select: { followers: true, following: true } } },
   });
 
   if (!user) redirect("/login");
@@ -110,6 +110,16 @@ export default async function ProfilePage({
               )}
               <p className="text-sm text-gray-500 dark:text-gray-400">{maskedEmail}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 capitalize">{user.role.toLowerCase()}</p>
+            </div>
+          </div>
+          <div className="flex gap-5 pt-3 border-t border-gray-100 dark:border-gray-800 mt-3">
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900 dark:text-gray-100">{user._count.followers}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Followers</p>
+            </div>
+            <div className="text-center">
+              <p className="text-base font-bold text-gray-900 dark:text-gray-100">{user._count.following}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Following</p>
             </div>
           </div>
         </section>
