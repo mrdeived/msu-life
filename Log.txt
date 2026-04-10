@@ -2024,3 +2024,24 @@ Users can now open Profile and view events they are attending or have liked thro
 
 ---
 
+## Entry 086 — Chat: MVP Foundation
+
+Date:
+2026-04-08
+
+Summary:
+- Added the first database models for chat conversations and messages
+- Replaced the Chat placeholder with a real MVP interface
+- Added conversation list and one-to-one message view
+- Added basic message sending for authenticated users
+- Kept the first version simple and extensible for future realtime and social features
+
+Commands:
+npx prisma migrate dev --name add_chat_mvp
+npx next build
+
+Verification:
+Authenticated users can now access a real Chat MVP, view conversations, open a conversation, and send basic text messages.
+
+---
+
