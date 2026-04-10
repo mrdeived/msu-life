@@ -25,9 +25,10 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
   let event, attendeeCount: number, bookmarkCount: number, likeCount: number;
   let isAttending = false, isBookmarked = false, isLiked = false;
   let attendees: { user: { firstName: string | null; lastName: string | null; email: string; username: string | null } }[] = [];
+  let followingAttending: { user: { firstName: string | null; lastName: string | null; email: string; username: string | null } }[] = [];
 
   if (user) {
-    const [ev, attCount, bmCount, lkCount, attendance, bookmark, like, atts] = await Promise.all([
+    const [ev, attCount, bmCount, lkCount, attendance, bookmark, like, atts, followAtts] = await Promise.all([
       ...baseQueries,
       prisma.eventAttendance.findUnique({
         where: { userId_eventId: { userId: user.id, eventId: id } },
@@ -47,6 +48,14 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         take: 50,
         select: { user: { select: { firstName: true, lastName: true, email: true, username: true } } },
       }),
+      prisma.eventAttendance.findMany({
+        where: {
+          eventId: id,
+          user: { followers: { some: { followerId: user.id } } },
+        },
+        take: 20,
+        select: { user: { select: { firstName: true, lastName: true, email: true, username: true } } },
+      }),
     ]);
 
     event = ev;
@@ -57,6 +66,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     isBookmarked = !!bookmark;
     isLiked = !!like;
     attendees = atts;
+    followingAttending = followAtts;
   } else {
     const [ev, attCount, bmCount, lkCount] = await Promise.all(baseQueries);
 
@@ -137,6 +147,48 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 attendeeCount={attendeeCount}
               />
             </div>
+
+            {/* People you follow attending */}
+            {followingAttending.length > 0 && (
+              <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 className="text-sm font-semibold text-msu-red mb-1">
+                  People you follow attending
+                </h3>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
+                  {followingAttending.length === 1
+                    ? "1 person you follow is attending"
+                    : `${followingAttending.length} people you follow are attending`}
+                </p>
+                <ul className="flex flex-wrap gap-2">
+                  {followingAttending.map((a, i) => {
+                    const name = computeDisplayName(a.user.firstName, a.user.lastName, a.user.email, a.user.username);
+                    const initial = (a.user.firstName ?? a.user.email).charAt(0).toUpperCase();
+                    return (
+                      <li key={i}>
+                        {a.user.username ? (
+                          <Link
+                            href={`/users/${a.user.username}`}
+                            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-msu-red/10 hover:bg-msu-red/20 transition-colors"
+                          >
+                            <span className="h-5 w-5 rounded-full bg-msu-red text-msu-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                              {initial}
+                            </span>
+                            <span className="text-xs text-msu-red font-medium">{name}</span>
+                          </Link>
+                        ) : (
+                          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-msu-red/10">
+                            <span className="h-5 w-5 rounded-full bg-msu-red text-msu-white flex items-center justify-center text-[10px] font-bold shrink-0">
+                              {initial}
+                            </span>
+                            <span className="text-xs text-msu-red font-medium">{name}</span>
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
 
             {/* Attendees */}
             <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800">

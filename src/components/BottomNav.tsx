@@ -3,18 +3,19 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, CalendarDays, MessageCircle, User } from "lucide-react";
+import { Home, CalendarDays, Users, User } from "lucide-react";
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
+  activePaths?: string[];
 }
 
 const navItems: NavItem[] = [
   { href: "/home",    label: "Home",    icon: <Home size={22} /> },
   { href: "/events",  label: "Events",  icon: <CalendarDays size={22} /> },
-  { href: "/chat",    label: "Chat",    icon: <MessageCircle size={22} /> },
+  { href: "/chat",    label: "Social",  icon: <Users size={22} />, activePaths: ["/chat", "/people"] },
   { href: "/profile", label: "Profile", icon: <User size={22} /> },
 ];
 
@@ -53,7 +54,8 @@ export default function BottomNav() {
       aria-label="Main navigation"
     >
       {navItems.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(item.href + "/");
+        const paths = item.activePaths ?? [item.href];
+        const active = paths.some((p) => pathname === p || pathname.startsWith(p + "/"));
         return (
           <Link
             key={item.href}

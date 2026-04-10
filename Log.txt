@@ -2088,3 +2088,23 @@ Verification:
 Users can now search for other users, open public profiles, follow/unfollow them, and access stronger entry points into the social layer.
 
 ---
+
+## Entry 089 — Social Hub + Social Events Integration
+
+Date:
+2026-04-10
+
+Summary:
+- Replaced Chat tab with a unified Social hub
+- Added tabs for Chat and People within the Social section
+- Reused existing chat and people search logic inside a single interface
+- Added "People you follow attending" section to event detail pages
+- Connected social graph with event participation for improved engagement
+
+Commands:
+npx next build
+
+Verification:
+Users can now access Chat and People from a single Social tab, and see which followed users are attending events.
+
+---
