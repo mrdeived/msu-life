@@ -55,6 +55,8 @@ export default function EventsHub({
 
   const [tab, setTab] = useState<Tab>("browse");
   const [query, setQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState<"upcoming" | "past" | "all">("upcoming");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -100,21 +102,77 @@ export default function EventsHub({
               </div>
             </div>
 
+            {/* Filter + Sort controls */}
+            <div className="px-4 sm:px-0 flex flex-wrap gap-2 items-center">
+              {/* Date filter */}
+              <div className="flex rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-medium">
+                {(["upcoming", "all", "past"] as const).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setDateFilter(f)}
+                    className={`px-3 py-1.5 transition-colors capitalize ${
+                      dateFilter === f
+                        ? "bg-msu-red text-msu-white"
+                        : "bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    {f}
+                  </button>
+                ))}
+              </div>
+
+              {/* Sort order */}
+              <div className="flex rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-medium">
+                <button
+                  onClick={() => setSortOrder("asc")}
+                  className={`px-3 py-1.5 transition-colors ${
+                    sortOrder === "asc"
+                      ? "bg-msu-red text-msu-white"
+                      : "bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  Soonest
+                </button>
+                <button
+                  onClick={() => setSortOrder("desc")}
+                  className={`px-3 py-1.5 transition-colors ${
+                    sortOrder === "desc"
+                      ? "bg-msu-red text-msu-white"
+                      : "bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`}
+                >
+                  Latest
+                </button>
+              </div>
+            </div>
+
             {(() => {
+              const now = new Date();
               const term = query.trim().toLowerCase();
-              const filtered = term
-                ? browseEvents.filter(
-                    (e) =>
-                      e.title.toLowerCase().includes(term) ||
-                      (e.description ?? "").toLowerCase().includes(term) ||
-                      (e.location ?? "").toLowerCase().includes(term)
-                  )
-                : browseEvents;
+
+              let filtered = browseEvents.filter((e) => {
+                const start = new Date(e.startAt);
+                if (dateFilter === "upcoming" && start <= now) return false;
+                if (dateFilter === "past" && start > now) return false;
+                if (term) {
+                  return (
+                    e.title.toLowerCase().includes(term) ||
+                    (e.description ?? "").toLowerCase().includes(term) ||
+                    (e.location ?? "").toLowerCase().includes(term)
+                  );
+                }
+                return true;
+              });
+
+              filtered = [...filtered].sort((a, b) => {
+                const diff = new Date(a.startAt).getTime() - new Date(b.startAt).getTime();
+                return sortOrder === "asc" ? diff : -diff;
+              });
 
               if (filtered.length === 0) {
                 return (
                   <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-12">
-                    {term ? "No events match your search." : "No upcoming events yet."}
+                    No events match your current filters.
                   </p>
                 );
               }

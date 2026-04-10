@@ -1965,3 +1965,23 @@ Users can now search events from the Events Browse tab and see the list filter i
 
 ---
 
+## Entry 083 — Events: Filters and Sorting in Browse Tab
+
+Date:
+2026-04-08
+
+Summary:
+- Added date-based filters to the Events Browse tab
+- Added sorting controls for soonest-first and latest-first ordering
+- Combined filters and sorting with the existing real-time search
+- Added a clean empty state for unmatched filter combinations
+- Preserved all existing event, navigation, and auth behavior
+
+Commands:
+npx next build
+
+Verification:
+Users can now search, filter, and sort events from the Events Browse tab without affecting other tabs or routes.
+
+---
+

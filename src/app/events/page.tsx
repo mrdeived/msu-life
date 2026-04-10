@@ -10,11 +10,11 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
 export default async function EventsPage() {
   const user = await optionalAuth();
 
-  // Fetch upcoming published events for Browse tab
+  // Fetch all published events for Browse tab (client handles date filter + sort)
   const rawEvents = await prisma.event.findMany({
-    where: { isPublished: true, startAt: { gt: new Date() } },
+    where: { isPublished: true },
     orderBy: { startAt: "asc" },
-    take: 20,
+    take: 100,
     select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, imageUrl: true },
   });
 
