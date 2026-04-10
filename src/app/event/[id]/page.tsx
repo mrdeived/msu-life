@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
 import EventActionRow from "@/components/EventActionRow";
 import EventCommentSection from "@/components/EventCommentSection";
+import EventChatButton from "./EventChatButton";
 
 export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await optionalAuth();
@@ -26,9 +27,11 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
   let isAttending = false, isBookmarked = false, isLiked = false;
   let attendees: { user: { firstName: string | null; lastName: string | null; email: string; username: string | null } }[] = [];
   let followingAttending: { user: { firstName: string | null; lastName: string | null; email: string; username: string | null } }[] = [];
+  let eventChatId: string | null = null;
+  let isEventChatParticipant = false;
 
   if (user) {
-    const [ev, attCount, bmCount, lkCount, attendance, bookmark, like, atts, followAtts] = await Promise.all([
+    const [ev, attCount, bmCount, lkCount, attendance, bookmark, like, atts, followAtts, eventChat] = await Promise.all([
       ...baseQueries,
       prisma.eventAttendance.findUnique({
         where: { userId_eventId: { userId: user.id, eventId: id } },
@@ -56,6 +59,13 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
         take: 20,
         select: { user: { select: { firstName: true, lastName: true, email: true, username: true } } },
       }),
+      prisma.conversation.findUnique({
+        where: { eventId: id },
+        select: {
+          id: true,
+          participants: { where: { userId: user.id }, select: { id: true }, take: 1 },
+        },
+      }),
     ]);
 
     event = ev;
@@ -67,6 +77,8 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
     isLiked = !!like;
     attendees = atts;
     followingAttending = followAtts;
+    eventChatId = eventChat?.id ?? null;
+    isEventChatParticipant = (eventChat?.participants.length ?? 0) > 0;
   } else {
     const [ev, attCount, bmCount, lkCount] = await Promise.all(baseQueries);
 
@@ -235,12 +247,26 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
               )}
             </div>
 
-            {/* Add to Calendar */}
-            <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800">
+            {/* Group Chat + Add to Calendar */}
+            <div className="px-5 py-3 border-b border-gray-100 dark:border-gray-800 flex flex-wrap items-center gap-3">
+              {eventChatId && user && (
+                <EventChatButton
+                  conversationId={eventChatId}
+                  isParticipant={isEventChatParticipant}
+                />
+              )}
+              {eventChatId && !user && (
+                <Link
+                  href="/login"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+                >
+                  Log in to join group chat
+                </Link>
+              )}
               <a
                 href={`/api/events/${event.id}/ics`}
                 download
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md border border-msu-red text-msu-red hover:bg-msu-red hover:text-msu-white transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-md border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-msu-red hover:text-msu-red transition-colors"
               >
                 Add to Calendar
               </a>

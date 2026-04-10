@@ -2188,3 +2188,23 @@ Verification:
 Creating a new event now also creates a linked group chat for that event, with the event creator automatically added as a participant.
 
 ---
+
+## Entry 094 — Events: Join/Open Group Chat from Event Detail
+
+Date:
+2026-04-10
+
+Summary:
+- Added event-linked group chat access to the event detail page
+- Shows Join Group Chat for authenticated users who are not yet participants
+- Shows Open Group Chat for users already in the event chat
+- Adds users to the event chat safely before redirecting when they join
+- Preserved all existing event and chat behavior
+
+Commands:
+npx next build
+
+Verification:
+Users can now open an event detail page and join or open the linked group chat directly from the event.
+
+---
