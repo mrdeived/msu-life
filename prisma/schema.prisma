@@ -17,6 +17,11 @@ enum GlobalRole {
   SUPERUSER
 }
 
+enum ConversationType {
+  DIRECT
+  GROUP
+}
+
 model User {
   id          String            @id @default(cuid())
   email       String            @unique
@@ -39,10 +44,11 @@ model User {
   scheduledWords  WordleScheduledWord[]
   comments        Comment[]
   eventComments   EventComment[]
-  conversations   ConversationParticipant[]
-  sentMessages    Message[]
-  following       Follow[]  @relation("UserFollowing")
-  followers       Follow[]  @relation("UserFollowers")
+  conversations        ConversationParticipant[]
+  sentMessages         Message[]
+  createdConversations Conversation[]           @relation("ConversationCreator")
+  following            Follow[]                 @relation("UserFollowing")
+  followers            Follow[]                 @relation("UserFollowers")
 }
 
 
@@ -70,11 +76,12 @@ model Event {
   createdById String?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  createdBy   User?             @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  attendances EventAttendance[]
-  bookmarks   EventBookmark[]
-  likes       EventLike[]
-  comments    EventComment[]
+  createdBy    User?             @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  attendances  EventAttendance[]
+  bookmarks    EventBookmark[]
+  likes        EventLike[]
+  comments     EventComment[]
+  conversation Conversation?
 
   @@index([startAt])
   @@index([isPublished])
@@ -201,10 +208,19 @@ model EventComment {
 
 model Conversation {
   id           String                    @id @default(cuid())
+  type         ConversationType          @default(DIRECT)
+  title        String?
+  eventId      String?                   @unique
+  createdById  String?
   createdAt    DateTime                  @default(now())
   updatedAt    DateTime                  @updatedAt
+  event        Event?                    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  createdBy    User?                     @relation("ConversationCreator", fields: [createdById], references: [id], onDelete: SetNull)
   participants ConversationParticipant[]
   messages     Message[]
+
+  @@index([eventId])
+  @@index([createdById])
 }
 
 model ConversationParticipant {

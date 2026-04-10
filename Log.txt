@@ -2148,3 +2148,23 @@ Verification:
 When a new message is sent in a conversation, subscribed participants receive it immediately in real time without refreshing.
 
 ---
+
+## Entry 092 — Chat: Group and Event-Linked Conversation Support
+
+Date:
+2026-04-10
+
+Summary:
+- Extended the conversation model to support both direct and group chats
+- Added metadata fields for group chat titles and optional event-linked conversations
+- Prepared the chat schema for automatic event chat creation and joinable group conversations
+- Preserved backward compatibility with all existing direct chats and realtime messaging
+
+Commands:
+npx prisma migrate dev --name add_group_and_event_chat_support
+npx next build
+
+Verification:
+The database schema now supports direct chats, group chats, and optional event-linked conversations without breaking existing messaging behavior.
+
+---
