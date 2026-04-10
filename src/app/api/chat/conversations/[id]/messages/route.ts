@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getSessionFromRequest } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPusherServer } from "@/lib/pusher-server";
 
 // POST /api/chat/conversations/[id]/messages — send a message
 export async function POST(
@@ -47,11 +48,21 @@ export async function POST(
     data: { updatedAt: new Date() },
   });
 
-  return Response.json({
+  const payload = {
     id: message.id,
     content: message.content,
     createdAt: message.createdAt.toISOString(),
     senderId: message.senderId,
     sender: message.sender,
-  }, { status: 201 });
+  };
+
+  // Publish to Pusher (fire-and-forget; falls back gracefully if not configured)
+  const pusher = getPusherServer();
+  if (pusher) {
+    pusher
+      .trigger(`private-conversation-${conversationId}`, "message:new", payload)
+      .catch((err) => console.error("Pusher publish failed:", err));
+  }
+
+  return Response.json(payload, { status: 201 });
 }

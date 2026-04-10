@@ -2128,3 +2128,23 @@ Verification:
 Users can now open Events → Friends Activity and see events attended by people they follow.
 
 ---
+
+## Entry 091 — Chat: Real-Time Messaging with Pusher
+
+Date:
+2026-04-10
+
+Summary:
+- Added Pusher-based real-time delivery for chat messages
+- Kept PostgreSQL and Prisma as the source of truth for persisted messages
+- Added secure private-channel authorization for conversation subscriptions
+- Updated the conversation UI to receive new messages instantly
+- Preserved existing chat architecture while upgrading responsiveness
+
+Commands:
+npx next build
+
+Verification:
+When a new message is sent in a conversation, subscribed participants receive it immediately in real time without refreshing.
+
+---

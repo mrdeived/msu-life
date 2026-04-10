@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { toast } from "@/lib/toast";
+import { getPusherClient } from "@/lib/pusher-client";
 
 interface MsgUser {
   firstName: string | null;
@@ -37,6 +38,28 @@ export default function MessageThread({ conversationId, currentUserId, initialMe
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Subscribe to Pusher for real-time incoming messages
+  useEffect(() => {
+    const pusher = getPusherClient();
+    if (!pusher) return; // Pusher not configured — fall back to current behavior
+
+    const channel = pusher.subscribe(`private-conversation-${conversationId}`);
+
+    channel.bind("message:new", (data: Msg) => {
+      setMessages((prev) => {
+        // Deduplicate: the sender already added the message from the API response
+        if (prev.some((m) => m.id === data.id)) return prev;
+        return [...prev, data];
+      });
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    });
+
+    return () => {
+      channel.unbind_all();
+      pusher.unsubscribe(`private-conversation-${conversationId}`);
+    };
+  }, [conversationId]);
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
