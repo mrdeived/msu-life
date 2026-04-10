@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { computeDisplayName, normalizeUsername } from "@/lib/deriveNames";
 import LogoutButton from "@/components/LogoutButton";
+import ProfileActivity from "./ProfileActivity";
 
 export default async function ProfilePage({
   searchParams,
@@ -18,6 +19,30 @@ export default async function ProfilePage({
   });
 
   if (!user) redirect("/login");
+
+  const [attendanceRows, likeRows] = await Promise.all([
+    prisma.eventAttendance.findMany({
+      where: { userId: authUser.id },
+      orderBy: { event: { startAt: "asc" } },
+      select: { event: { select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, imageUrl: true } } },
+    }),
+    prisma.eventLike.findMany({
+      where: { userId: authUser.id },
+      orderBy: { event: { startAt: "asc" } },
+      select: { event: { select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true, imageUrl: true } } },
+    }),
+  ]);
+
+  const attending = attendanceRows.map((r) => ({
+    ...r.event,
+    startAt: r.event.startAt.toISOString(),
+    endAt: r.event.endAt?.toISOString() ?? null,
+  }));
+  const liked = likeRows.map((r) => ({
+    ...r.event,
+    startAt: r.event.startAt.toISOString(),
+    endAt: r.event.endAt?.toISOString() ?? null,
+  }));
 
   const displayName = computeDisplayName(user.firstName, user.lastName, user.email, user.username);
   const maskedEmail =
@@ -149,6 +174,9 @@ export default async function ProfilePage({
             Save
           </button>
         </form>
+
+        {/* Activity section */}
+        <ProfileActivity attending={attending} liked={liked} />
 
         <div className="flex justify-center">
           <LogoutButton />

@@ -2004,3 +2004,23 @@ Users now receive immediate visual feedback for key actions through toasts and l
 
 ---
 
+## Entry 085 — Profile: Activity Section for Attending and Liked Events
+
+Date:
+2026-04-08
+
+Summary:
+- Added a new Activity section to the Profile page
+- Introduced Attending and Liked tabs for personal event activity
+- Reused event rendering patterns to show the user's event interactions
+- Added clean empty states for both activity tabs
+- Preserved all existing routes and event behavior
+
+Commands:
+npx next build
+
+Verification:
+Users can now open Profile and view events they are attending or have liked through the new Activity section.
+
+---
+
