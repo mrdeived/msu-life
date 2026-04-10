@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Users } from "lucide-react";
 import NewChatButton from "./NewChatButton";
 
 export default async function ChatPage() {
@@ -64,7 +64,16 @@ export default async function ChatPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <header className="bg-msu-red border-b-2 border-msu-green px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-bold text-msu-white">Chat</h1>
-        <NewChatButton />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/people"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md text-msu-white/90 hover:text-msu-white hover:bg-white/10 transition-colors"
+          >
+            <Users size={15} />
+            People
+          </Link>
+          <NewChatButton />
+        </div>
       </header>
 
       <main className="max-w-lg mx-auto sm:py-6">

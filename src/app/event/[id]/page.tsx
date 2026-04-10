@@ -100,9 +100,15 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 <h2 className="text-xl font-bold text-msu-white leading-tight drop-shadow-sm">
                   {event.title}
                 </h2>
-                <p className="text-sm text-msu-white/80 mt-1">
-                  @{event.createdBy?.username ?? event.createdBy?.email?.split("@")[0] ?? "unknown"}
-                </p>
+                {event.createdBy?.username ? (
+                  <Link href={`/users/${event.createdBy.username}`} className="text-sm text-msu-white/80 mt-1 hover:text-msu-white transition-colors">
+                    @{event.createdBy.username}
+                  </Link>
+                ) : (
+                  <p className="text-sm text-msu-white/80 mt-1">
+                    @{event.createdBy?.email?.split("@")[0] ?? "unknown"}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -147,12 +153,24 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
                 <ul className="space-y-2">
                   {attendees.map((a, i) => {
                     const name = computeDisplayName(a.user.firstName, a.user.lastName, a.user.email, a.user.username);
+                    const avatar = (
+                      <div className="h-7 w-7 rounded-full bg-msu-red/10 text-msu-red flex items-center justify-center text-xs font-bold shrink-0">
+                        {name.charAt(0).toUpperCase()}
+                      </div>
+                    );
                     return (
-                      <li key={i} className="flex items-center gap-2.5">
-                        <div className="h-7 w-7 rounded-full bg-msu-red/10 text-msu-red flex items-center justify-center text-xs font-bold shrink-0">
-                          {name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
+                      <li key={i}>
+                        {a.user.username ? (
+                          <Link href={`/users/${a.user.username}`} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+                            {avatar}
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center gap-2.5">
+                            {avatar}
+                            <span className="text-sm text-gray-700 dark:text-gray-300">{name}</span>
+                          </div>
+                        )}
                       </li>
                     );
                   })}

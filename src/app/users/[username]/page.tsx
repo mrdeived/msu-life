@@ -4,6 +4,7 @@ import { optionalAuth } from "@/lib/optionalAuth";
 import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
 import FollowButton from "./FollowButton";
+import MessageButton from "./MessageButton";
 
 export default async function UserProfilePage({
   params,
@@ -88,7 +89,12 @@ export default async function UserProfilePage({
               </div>
             </div>
             {!isOwnProfile && viewer && (
-              <FollowButton targetId={profileUser.id} initialFollowing={isFollowing} />
+              <div className="flex flex-col items-end gap-2">
+                <FollowButton targetId={profileUser.id} initialFollowing={isFollowing} />
+                {profileUser.username && (
+                  <MessageButton username={profileUser.username} />
+                )}
+              </div>
             )}
             {isOwnProfile && (
               <Link

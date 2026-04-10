@@ -2068,3 +2068,23 @@ Verification:
 Users can visit /users/[username] to view a public profile, follow or unfollow the user, and see follower and following lists. The own Profile page now shows live follower and following counts.
 
 ---
+
+## Entry 088 — Social: People Search and Public Profile Discoverability
+
+Date:
+2026-04-10
+
+Summary:
+- Added a People page for searching other users by username and name
+- Improved discoverability of public user profiles
+- Added clearer entry points for finding other users
+- Preserved follow/unfollow functionality and profile counts
+- Prepared the social layer for stronger chat and event-based social interactions
+
+Commands:
+npx next build
+
+Verification:
+Users can now search for other users, open public profiles, follow/unfollow them, and access stronger entry points into the social layer.
+
+---

@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { Users } from "lucide-react";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -112,15 +114,24 @@ export default async function ProfilePage({
               <p className="text-xs text-gray-400 dark:text-gray-500 capitalize">{user.role.toLowerCase()}</p>
             </div>
           </div>
-          <div className="flex gap-5 pt-3 border-t border-gray-100 dark:border-gray-800 mt-3">
-            <div className="text-center">
-              <p className="text-base font-bold text-gray-900 dark:text-gray-100">{user._count.followers}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Followers</p>
+          <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800 mt-3">
+            <div className="flex gap-5">
+              <div className="text-center">
+                <p className="text-base font-bold text-gray-900 dark:text-gray-100">{user._count.followers}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Followers</p>
+              </div>
+              <div className="text-center">
+                <p className="text-base font-bold text-gray-900 dark:text-gray-100">{user._count.following}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Following</p>
+              </div>
             </div>
-            <div className="text-center">
-              <p className="text-base font-bold text-gray-900 dark:text-gray-100">{user._count.following}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Following</p>
-            </div>
+            <Link
+              href="/people"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-msu-red hover:text-msu-red transition-colors"
+            >
+              <Users size={12} />
+              Find People
+            </Link>
           </div>
         </section>
 
