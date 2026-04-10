@@ -53,22 +53,41 @@ export async function createEventAction(
 
   let event: { id: string };
   try {
-    event = await prisma.event.create({
-      data: {
-        title,
-        location,
-        description,
-        startAt,
-        endAt,
-        isPublished: true,
-        createdById: user.id,
-        imageUrl: imageUrl ?? null,
-        imagePublicId: imagePublicId ?? null,
-      },
-      select: { id: true },
+    const result = await prisma.$transaction(async (tx) => {
+      const newEvent = await tx.event.create({
+        data: {
+          title,
+          location,
+          description,
+          startAt,
+          endAt,
+          isPublished: true,
+          createdById: user.id,
+          imageUrl: imageUrl ?? null,
+          imagePublicId: imagePublicId ?? null,
+        },
+        select: { id: true },
+      });
+
+      const conversation = await tx.conversation.create({
+        data: {
+          type: "GROUP",
+          title,
+          eventId: newEvent.id,
+          createdById: user.id,
+        },
+        select: { id: true },
+      });
+
+      await tx.conversationParticipant.create({
+        data: { conversationId: conversation.id, userId: user.id },
+      });
+
+      return newEvent;
     });
+    event = result;
   } catch (err) {
-    console.error("[createEventAction] prisma.event.create failed:", err);
+    console.error("[createEventAction] transaction failed:", err);
     return { error: "Failed to create event. Please try again." };
   }
 

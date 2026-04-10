@@ -2168,3 +2168,23 @@ Verification:
 The database schema now supports direct chats, group chats, and optional event-linked conversations without breaking existing messaging behavior.
 
 ---
+
+## Entry 093 — Events: Auto-Create Group Chat on Event Creation
+
+Date:
+2026-04-10
+
+Summary:
+- Updated event creation to automatically create a linked group chat
+- Created a GROUP conversation for each new event
+- Linked the conversation to the event and the event creator
+- Added the event creator as the first conversation participant
+- Kept the event creation flow consistent and safe through transactional behavior
+
+Commands:
+npx next build
+
+Verification:
+Creating a new event now also creates a linked group chat for that event, with the event creator automatically added as a participant.
+
+---
