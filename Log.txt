@@ -2108,3 +2108,23 @@ Verification:
 Users can now access Chat and People from a single Social tab, and see which followed users are attending events.
 
 ---
+
+## Entry 090 — Events: Friends Activity Tab
+
+Date:
+2026-04-10
+
+Summary:
+- Added a Friends Activity tab to the Events hub
+- Displayed events where users you follow are attending
+- Reused existing event card UI with added social proof indicators
+- Added clean empty state for users with no followed activity
+- Strengthened integration between social graph and events
+
+Commands:
+npx next build
+
+Verification:
+Users can now open Events → Friends Activity and see events attended by people they follow.
+
+---

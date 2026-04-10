@@ -36,9 +36,16 @@ export default async function EventsPage() {
   let attending: { id: string; title: string; description: string | null; location: string | null; startAt: string; endAt: string | null }[] = [];
   let bookmarked: typeof attending = [];
   let isAdmin = false;
+  let friendsEvents: {
+    id: string; title: string; description: string | null; location: string | null;
+    startAt: string; endAt: string | null; imageUrl: string | null;
+    likeCount: number; bookmarkCount: number; attendeeCount: number;
+    liked: boolean; bookmarked: boolean; attending: boolean;
+    followingAttendees: { username: string | null; firstName: string | null; lastName: string | null; email: string }[];
+  }[] = [];
 
   if (user) {
-    const [likeCounts, bookmarkCounts, attendanceCounts, userLikes, userBookmarks, userAttendances, attendances, userBookmarks2, dbUser] =
+    const [likeCounts, bookmarkCounts, attendanceCounts, userLikes, userBookmarks, userAttendances, attendances, userBookmarks2, dbUser, friendsRaw] =
       await Promise.all([
         ...countQueries,
         prisma.eventLike.findMany({ where: { userId: user.id, eventId: { in: eventIds } }, select: { eventId: true } }),
@@ -55,6 +62,27 @@ export default async function EventsPage() {
           select: { event: { select: { id: true, title: true, description: true, location: true, startAt: true, endAt: true } } },
         }),
         prisma.user.findUnique({ where: { id: user.id }, select: { isAdmin: true, email: true } }),
+        prisma.event.findMany({
+          where: {
+            isPublished: true,
+            attendances: { some: { user: { followers: { some: { followerId: user.id } } } } },
+          },
+          orderBy: { startAt: "asc" },
+          take: 50,
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            location: true,
+            startAt: true,
+            endAt: true,
+            imageUrl: true,
+            attendances: {
+              where: { user: { followers: { some: { followerId: user.id } } } },
+              select: { user: { select: { username: true, firstName: true, lastName: true, email: true } } },
+            },
+          },
+        }),
       ]);
 
     likesById = new Map(likeCounts.map((x) => [x.eventId, x._count._all]));
@@ -82,6 +110,28 @@ export default async function EventsPage() {
     }));
 
     isAdmin = !!(dbUser && (dbUser.isAdmin || ADMIN_EMAILS.includes(dbUser.email.toLowerCase())));
+
+    friendsEvents = friendsRaw.map((e) => ({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      location: e.location,
+      startAt: e.startAt.toISOString(),
+      endAt: e.endAt?.toISOString() ?? null,
+      imageUrl: e.imageUrl,
+      likeCount: likesById.get(e.id) ?? 0,
+      bookmarkCount: bookmarksById.get(e.id) ?? 0,
+      attendeeCount: attendanceById.get(e.id) ?? 0,
+      liked: userLikedIds.has(e.id),
+      bookmarked: userBookmarkedIds.has(e.id),
+      attending: userAttendingIds.has(e.id),
+      followingAttendees: e.attendances.map((a) => ({
+        username: a.user.username,
+        firstName: a.user.firstName,
+        lastName: a.user.lastName,
+        email: a.user.email,
+      })),
+    }));
   } else {
     const [likeCounts, bookmarkCounts, attendanceCounts] = await Promise.all(countQueries);
     likesById = new Map(likeCounts.map((x) => [x.eventId, x._count._all]));
@@ -112,6 +162,7 @@ export default async function EventsPage() {
       browseEvents={browseEvents}
       attending={attending}
       bookmarked={bookmarked}
+      friendsEvents={friendsEvents}
     />
   );
 }
