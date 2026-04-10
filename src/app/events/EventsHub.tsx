@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import FeedActionRow from "@/components/FeedActionRow";
 import MyEventsTabs from "@/components/MyEventsTabs";
 
@@ -54,6 +54,7 @@ export default function EventsHub({
   ];
 
   const [tab, setTab] = useState<Tab>("browse");
+  const [query, setQuery] = useState("");
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -85,10 +86,40 @@ export default function EventsHub({
         {/* Browse tab */}
         {tab === "browse" && (
           <>
-            {browseEvents.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-12">No upcoming events yet.</p>
-            ) : (
-              browseEvents.map((e) => {
+            {/* Search input */}
+            <div className="px-4 sm:px-0 pt-4 sm:pt-0">
+              <div className="relative">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search events..."
+                  className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-msu-red/50 focus:border-msu-red"
+                />
+              </div>
+            </div>
+
+            {(() => {
+              const term = query.trim().toLowerCase();
+              const filtered = term
+                ? browseEvents.filter(
+                    (e) =>
+                      e.title.toLowerCase().includes(term) ||
+                      (e.description ?? "").toLowerCase().includes(term) ||
+                      (e.location ?? "").toLowerCase().includes(term)
+                  )
+                : browseEvents;
+
+              if (filtered.length === 0) {
+                return (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-12">
+                    {term ? "No events match your search." : "No upcoming events yet."}
+                  </p>
+                );
+              }
+
+              return filtered.map((e) => {
                 const startAt = new Date(e.startAt);
                 const endAt = e.endAt ? new Date(e.endAt) : null;
                 return (
@@ -151,8 +182,8 @@ export default function EventsHub({
                     />
                   </div>
                 );
-              })
-            )}
+              });
+            })()}
           </>
         )}
 

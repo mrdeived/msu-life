@@ -1945,3 +1945,23 @@ Users can now access all event-related functionality through the Events tab. Bot
 
 ---
 
+## Entry 082 — Events: Search in Browse Tab
+
+Date:
+2026-04-08
+
+Summary:
+- Added a search input to the Browse tab inside the Events hub
+- Implemented real-time client-side filtering of visible events
+- Matched event titles case-insensitively, with optional support for description/location if already available
+- Added a clean empty state when no events match the search
+- Preserved all existing event and navigation behavior
+
+Commands:
+npx next build
+
+Verification:
+Users can now search events from the Events Browse tab and see the list filter in real time without affecting other tabs or routes.
+
+---
+
