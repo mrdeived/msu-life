@@ -14,12 +14,14 @@ export default async function ConversationPage({
   const user = await requireAuth();
   const { conversationId } = await params;
 
-  // Verify the current user is a participant and get conversation type
+  // Verify participation (and mark as read) + get conversation type in parallel
   const [participation, conversation] = await Promise.all([
-    prisma.conversationParticipant.findUnique({
+    // Update also serves as the existence check; catch P2025 (not found) → null
+    prisma.conversationParticipant.update({
       where: { conversationId_userId: { conversationId, userId: user.id } },
+      data: { lastReadAt: new Date() },
       select: { id: true },
-    }),
+    }).catch(() => null),
     prisma.conversation.findUnique({
       where: { id: conversationId },
       select: { type: true, title: true },

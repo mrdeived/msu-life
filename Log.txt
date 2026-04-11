@@ -2247,3 +2247,24 @@ Verification:
 Group chats now show who sent each message, while direct chats continue to render as before.
 
 ---
+
+## Entry 097 — Chat: Unread Message Tracking and Badges
+
+Date:
+2026-04-10
+
+Summary:
+- Added per-user read tracking for conversations
+- Implemented unread message counts for each conversation
+- Added unread badges to the Social tab and conversation list
+- Marked conversations as read when opened
+- Preserved existing realtime and chat behavior while improving message awareness
+
+Commands:
+npx prisma migrate dev --name add_chat_unread_tracking
+npx next build
+
+Verification:
+Users now see unread badges in Social and on individual conversations, and opening a conversation clears its unread state.
+
+---

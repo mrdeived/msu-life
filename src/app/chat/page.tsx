@@ -15,12 +15,13 @@ export default async function SocialPage({
   const activeTab = tab === "people" ? "people" : "chat";
   const query = (q ?? "").trim();
 
-  // Always fetch conversations
+  // Always fetch conversations (with lastReadAt for unread tracking)
   const participations = await prisma.conversationParticipant.findMany({
     where: { userId: user.id },
     orderBy: { conversation: { updatedAt: "desc" } },
     select: {
       conversationId: true,
+      lastReadAt: true,
       conversation: {
         select: {
           id: true,
@@ -44,12 +45,28 @@ export default async function SocialPage({
     },
   });
 
+  // Compute per-conversation unread counts in parallel
+  const unreadResults = await Promise.all(
+    participations.map((p) => {
+      if (!p.lastReadAt) return Promise.resolve(0);
+      return prisma.message.count({
+        where: {
+          conversationId: p.conversationId,
+          senderId: { not: user.id },
+          createdAt: { gt: p.lastReadAt },
+        },
+      });
+    })
+  );
+  const unreadById = new Map(participations.map((p, i) => [p.conversationId, unreadResults[i]]));
+
   const conversations = participations.map((p) => {
     const other = p.conversation.participants[0]?.user;
     const latest = p.conversation.messages[0];
     return {
       id: p.conversation.id,
       updatedAt: p.conversation.updatedAt,
+      unreadCount: unreadById.get(p.conversationId) ?? 0,
       other: other
         ? {
             name: computeDisplayName(other.firstName, other.lastName, other.email, other.username),
@@ -157,7 +174,7 @@ export default async function SocialPage({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline justify-between gap-2">
-                          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                          <span className={`text-sm truncate ${c.unreadCount > 0 ? "font-bold text-gray-900 dark:text-gray-100" : "font-semibold text-gray-900 dark:text-gray-100"}`}>
                             {c.other?.name ?? "Unknown"}
                           </span>
                           {c.latest && (
@@ -167,13 +184,18 @@ export default async function SocialPage({
                           )}
                         </div>
                         {c.latest ? (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          <p className={`text-xs truncate ${c.unreadCount > 0 ? "font-medium text-gray-700 dark:text-gray-200" : "text-gray-500 dark:text-gray-400"}`}>
                             {c.latest.mine ? "You: " : ""}{c.latest.content}
                           </p>
                         ) : (
                           <p className="text-xs text-gray-400 dark:text-gray-500 italic">No messages yet</p>
                         )}
                       </div>
+                      {c.unreadCount > 0 && (
+                        <span className="shrink-0 min-w-[20px] h-5 flex items-center justify-center rounded-full bg-msu-red text-msu-white text-[10px] font-bold px-1">
+                          {c.unreadCount > 9 ? "9+" : c.unreadCount}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 ))}

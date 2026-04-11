@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
 export default function BottomNav() {
   const pathname = usePathname();
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+  const [chatUnread, setChatUnread] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +33,12 @@ export default function BottomNav() {
       })
       .then(() => { if (!cancelled) setIsAuthed(true); })
       .catch(() => { if (!cancelled) setIsAuthed(false); });
+
+    fetch("/api/chat/unread")
+      .then((r) => r.ok ? r.json() : { total: 0 })
+      .then((d) => { if (!cancelled) setChatUnread(d.total ?? 0); })
+      .catch(() => {});
+
     return () => { cancelled = true; };
   }, [pathname]);
 
@@ -67,7 +74,14 @@ export default function BottomNav() {
                 : "text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:scale-110"
               }`}
           >
-            {item.icon}
+            <div className="relative">
+              {item.icon}
+              {item.href === "/chat" && chatUnread > 0 && (
+                <span className="absolute -top-1 -right-1.5 min-w-[15px] h-[15px] flex items-center justify-center rounded-full bg-msu-red text-white text-[8px] font-bold ring-2 ring-white dark:ring-gray-900 px-0.5">
+                  {chatUnread > 9 ? "9+" : chatUnread}
+                </span>
+              )}
+            </div>
             <span className="text-[10px] font-medium leading-none">{item.label}</span>
             {active && (
               <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-msu-red" />
