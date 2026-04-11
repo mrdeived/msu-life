@@ -2208,3 +2208,23 @@ Verification:
 Users can now open an event detail page and join or open the linked group chat directly from the event.
 
 ---
+
+## Entry 095 — Chat: Leave Group Chat
+
+Date:
+2026-04-10
+
+Summary:
+- Added ability for users to leave group chats
+- Implemented secure leave API that removes the user as a participant
+- Added Leave Chat button in group chat UI
+- Ensured chats are removed from the user's list upon leaving
+- Preserved conversation for all remaining participants
+
+Commands:
+npx next build
+
+Verification:
+Users can leave group chats and the chat disappears from their list, while other participants remain unaffected.
+
+---
