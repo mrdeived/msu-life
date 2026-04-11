@@ -2268,3 +2268,22 @@ Verification:
 Users now see unread badges in Social and on individual conversations, and opening a conversation clears its unread state.
 
 ---
+
+## Entry 098 — Mobile UX: Disable Input Zoom and Fix Chat Composer Position
+
+Date:
+2026-04-10
+
+Summary:
+- Prevented unwanted iPhone zoom behavior when focusing text inputs
+- Updated the chat conversation layout so the message composer stays fixed above the bottom navigation
+- Added proper bottom spacing so messages remain visible above the fixed composer
+- Improved mobile chat usability without changing existing app behavior
+
+Commands:
+npx next build
+
+Verification:
+On iPhone, focusing inputs no longer causes unwanted zoom, and the chat input remains fixed above the bottom navigation while messages scroll correctly.
+
+---

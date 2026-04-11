@@ -106,8 +106,8 @@ export default function MessageThread({ conversationId, currentUserId, initialMe
 
   return (
     <div className="flex flex-col h-full">
-      {/* Message list */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+      {/* Message list — extra bottom padding so messages don't hide under the fixed composer */}
+      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-44 space-y-1">
         {messages.length === 0 && (
           <p className="text-center text-sm text-gray-400 dark:text-gray-500 py-8">
             No messages yet. Say hello!
@@ -157,10 +157,11 @@ export default function MessageThread({ conversationId, currentUserId, initialMe
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
+      {/* Input — fixed above the bottom navigation */}
+      <div className="fixed bottom-20 inset-x-0 z-30 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
       <form
         onSubmit={handleSend}
-        className="flex items-end gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
+        className="max-w-lg mx-auto flex items-end gap-2 px-4 py-3"
       >
         <textarea
           value={text}
@@ -184,6 +185,7 @@ export default function MessageThread({ conversationId, currentUserId, initialMe
           <Send size={16} />
         </button>
       </form>
+      </div>
     </div>
   );
 }
