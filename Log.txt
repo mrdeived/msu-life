@@ -2228,3 +2228,22 @@ Verification:
 Users can leave group chats and the chat disappears from their list, while other participants remain unaffected.
 
 ---
+
+## Entry 096 — Chat: Show Sender Identity in Group Messages
+
+Date:
+2026-04-10
+
+Summary:
+- Updated group chat message rendering to display sender identity
+- Kept direct chat UI unchanged
+- Used username/display name fallbacks without exposing private data
+- Improved readability of event-linked and group conversations
+
+Commands:
+npx next build
+
+Verification:
+Group chats now show who sent each message, while direct chats continue to render as before.
+
+---

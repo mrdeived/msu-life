@@ -89,6 +89,7 @@ export default async function ConversationPage({
           conversationId={conversationId}
           currentUserId={user.id}
           initialMessages={messages}
+          isGroup={isGroup}
         />
       </div>
     </div>

@@ -23,6 +23,14 @@ interface Props {
   conversationId: string;
   currentUserId: string;
   initialMessages: Msg[];
+  isGroup: boolean;
+}
+
+function senderLabel(sender: MsgUser): string {
+  if (sender.username) return `@${sender.username}`;
+  if (sender.firstName && sender.lastName) return `${sender.firstName} ${sender.lastName}`;
+  if (sender.firstName) return sender.firstName;
+  return "Unknown";
 }
 
 function formatTime(iso: string) {
@@ -33,7 +41,7 @@ function formatDay(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
-export default function MessageThread({ conversationId, currentUserId, initialMessages }: Props) {
+export default function MessageThread({ conversationId, currentUserId, initialMessages, isGroup }: Props) {
   const [messages, setMessages] = useState<Msg[]>(initialMessages);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -123,17 +131,24 @@ export default function MessageThread({ conversationId, currentUserId, initialMe
               )}
 
               <div className={`flex ${mine ? "justify-end" : "justify-start"} mb-1`}>
-                <div
-                  className={`max-w-[78%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
-                    mine
-                      ? "bg-msu-red text-msu-white rounded-br-sm"
-                      : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm"
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                  <p className={`text-[10px] mt-0.5 ${mine ? "text-msu-white/70 text-right" : "text-gray-400 dark:text-gray-500"}`}>
-                    {formatTime(msg.createdAt)}
-                  </p>
+                <div className={`max-w-[78%] ${!mine ? "space-y-0.5" : ""}`}>
+                  {isGroup && !mine && (
+                    <p className="text-[11px] font-medium text-gray-400 dark:text-gray-500 px-1">
+                      {senderLabel(msg.sender)}
+                    </p>
+                  )}
+                  <div
+                    className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
+                      mine
+                        ? "bg-msu-red text-msu-white rounded-br-sm"
+                        : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm"
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                    <p className={`text-[10px] mt-0.5 ${mine ? "text-msu-white/70 text-right" : "text-gray-400 dark:text-gray-500"}`}>
+                      {formatTime(msg.createdAt)}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
