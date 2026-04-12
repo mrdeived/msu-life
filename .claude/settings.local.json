@@ -7,7 +7,8 @@
       "Bash(echo \"exit: $?\")",
       "Bash(node -e \"const p=require\\('./package.json'\\);console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")",
       "Bash(grep -l \"from \\\\\"@/lib/toast\\\\\"\" /home/mrdeived/msu-life/src/components/*.tsx /home/mrdeived/msu-life/src/app/login/page.tsx /home/mrdeived/msu-life/src/app/events/new/CreateEventForm.tsx)",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\")",
+      "Bash(grep:*)"
     ]
   }
 }

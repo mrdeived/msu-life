@@ -157,11 +157,11 @@ export default function MessageThread({ conversationId, currentUserId, initialMe
         <div ref={bottomRef} />
       </div>
 
-      {/* Input — fixed above the bottom navigation */}
-      <div className="fixed bottom-20 inset-x-0 z-30 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+      {/* Input — fixed floating layer above BottomNav, same centering strategy */}
+      <div className="fixed bottom-[4.5rem] left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
       <form
         onSubmit={handleSend}
-        className="max-w-lg mx-auto flex items-end gap-2 px-4 py-3"
+        className="flex items-end gap-2 px-4 py-3"
       >
         <textarea
           value={text}
