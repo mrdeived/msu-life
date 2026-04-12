@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/requireAuth";
 import { prisma } from "@/lib/prisma";
 import { computeDisplayName } from "@/lib/deriveNames";
+import { ChatProvider } from "./ChatContext";
 import MessageThread from "./MessageInput";
+import ChatComposer from "./ChatComposer";
 import LeaveChatButton from "./LeaveChatButton";
 
 export default async function ConversationPage({
@@ -68,32 +70,41 @@ export default async function ConversationPage({
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
-      <header className="bg-msu-red border-b-2 border-msu-green px-4 py-3 flex items-center gap-3 shrink-0">
-        <Link href="/chat" className="text-msu-white/80 text-sm hover:text-msu-white">&larr;</Link>
-        <div className="h-8 w-8 rounded-full bg-msu-white/20 flex items-center justify-center text-msu-white font-bold text-sm shrink-0">
-          {isGroup ? (conversation?.title?.charAt(0).toUpperCase() ?? "G") : otherInitial}
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-msu-white leading-tight truncate">
-            {isGroup ? (conversation?.title ?? "Group Chat") : otherName}
-          </p>
-          {!isGroup && otherUser?.username && (
-            <p className="text-xs text-msu-white/70">@{otherUser.username}</p>
-          )}
-          {isGroup && <p className="text-xs text-msu-white/70">Group Chat</p>}
-        </div>
-        {isGroup && <LeaveChatButton conversationId={conversationId} />}
-      </header>
+    // ChatProvider wraps both the chat content and ChatComposer so they share state.
+    // ChatComposer uses createPortal to render into document.body — completely outside
+    // this container in the DOM — so it is never part of the scrollable content area.
+    <ChatProvider
+      conversationId={conversationId}
+      currentUserId={user.id}
+      isGroup={isGroup}
+      initialMessages={messages}
+    >
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
+        <header className="bg-msu-red border-b-2 border-msu-green px-4 py-3 flex items-center gap-3 shrink-0">
+          <Link href="/chat" className="text-msu-white/80 text-sm hover:text-msu-white">&larr;</Link>
+          <div className="h-8 w-8 rounded-full bg-msu-white/20 flex items-center justify-center text-msu-white font-bold text-sm shrink-0">
+            {isGroup ? (conversation?.title?.charAt(0).toUpperCase() ?? "G") : otherInitial}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-msu-white leading-tight truncate">
+              {isGroup ? (conversation?.title ?? "Group Chat") : otherName}
+            </p>
+            {!isGroup && otherUser?.username && (
+              <p className="text-xs text-msu-white/70">@{otherUser.username}</p>
+            )}
+            {isGroup && <p className="text-xs text-msu-white/70">Group Chat</p>}
+          </div>
+          {isGroup && <LeaveChatButton conversationId={conversationId} />}
+        </header>
 
-      <div className="flex-1 max-w-lg w-full mx-auto flex flex-col overflow-hidden">
-        <MessageThread
-          conversationId={conversationId}
-          currentUserId={user.id}
-          initialMessages={messages}
-          isGroup={isGroup}
-        />
+        <div className="flex-1 max-w-lg w-full mx-auto flex flex-col overflow-hidden">
+          <MessageThread />
+        </div>
       </div>
-    </div>
+
+      {/* Rendered via createPortal into document.body — lives outside the chat
+          container in the DOM, same layer as BottomNav */}
+      <ChatComposer />
+    </ChatProvider>
   );
 }

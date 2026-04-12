@@ -1,32 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
-import { toast } from "@/lib/toast";
+import { useEffect, useRef } from "react";
 import { getPusherClient } from "@/lib/pusher-client";
+import { useChatContext, type ChatMessage } from "./ChatContext";
 
-interface MsgUser {
-  firstName: string | null;
-  lastName: string | null;
-  username: string | null;
-}
-
-interface Msg {
-  id: string;
-  content: string;
-  createdAt: string;
-  senderId: string;
-  sender: MsgUser;
-}
-
-interface Props {
-  conversationId: string;
-  currentUserId: string;
-  initialMessages: Msg[];
-  isGroup: boolean;
-}
-
-function senderLabel(sender: MsgUser): string {
+function senderLabel(sender: { firstName: string | null; lastName: string | null; username: string | null }): string {
   if (sender.username) return `@${sender.username}`;
   if (sender.firstName && sender.lastName) return `${sender.firstName} ${sender.lastName}`;
   if (sender.firstName) return sender.firstName;
@@ -41,26 +19,19 @@ function formatDay(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
-export default function MessageThread({ conversationId, currentUserId, initialMessages, isGroup }: Props) {
-  const [messages, setMessages] = useState<Msg[]>(initialMessages);
-  const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
+export default function MessageThread() {
+  const { conversationId, currentUserId, isGroup, messages, addMessage } = useChatContext();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const isInitial = useRef(true);
 
   // Subscribe to Pusher for real-time incoming messages
   useEffect(() => {
     const pusher = getPusherClient();
-    if (!pusher) return; // Pusher not configured — fall back to current behavior
+    if (!pusher) return;
 
     const channel = pusher.subscribe(`private-conversation-${conversationId}`);
-
-    channel.bind("message:new", (data: Msg) => {
-      setMessages((prev) => {
-        // Deduplicate: the sender already added the message from the API response
-        if (prev.some((m) => m.id === data.id)) return prev;
-        return [...prev, data];
-      });
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    channel.bind("message:new", (data: ChatMessage) => {
+      addMessage(data);
     });
 
     return () => {
@@ -69,123 +40,68 @@ export default function MessageThread({ conversationId, currentUserId, initialMe
     };
   }, [conversationId]);
 
-  async function handleSend(e: React.FormEvent) {
-    e.preventDefault();
-    const content = text.trim();
-    if (!content || sending) return;
-    setSending(true);
-    setText("");
-
-    try {
-      const res = await fetch(`/api/chat/conversations/${conversationId}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        toast((data as { error?: string }).error ?? "Failed to send", "error");
-        setText(content); // restore input
-        return;
-      }
-
-      const msg: Msg = await res.json();
-      setMessages((prev) => [...prev, msg]);
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-    } catch {
-      toast("Failed to send message", "error");
-      setText(content);
-    } finally {
-      setSending(false);
+  // Scroll to bottom on mount (immediate) and on new messages (smooth)
+  useEffect(() => {
+    if (isInitial.current) {
+      isInitial.current = false;
+      bottomRef.current?.scrollIntoView();
+      return;
     }
-  }
+    setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+  }, [messages.length]);
 
-  // Group messages by day for date separators
   let lastDay = "";
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Message list — extra bottom padding so messages don't hide under the fixed composer */}
-      <div className="flex-1 overflow-y-auto px-4 pt-4 pb-44 space-y-1">
-        {messages.length === 0 && (
-          <p className="text-center text-sm text-gray-400 dark:text-gray-500 py-8">
-            No messages yet. Say hello!
-          </p>
-        )}
+    // pb-44 clears the fixed composer (~60px tall at bottom-[4.5rem]=72px) and the BottomNav
+    <div className="flex-1 overflow-y-auto px-4 pt-4 pb-44 space-y-1">
+      {messages.length === 0 && (
+        <p className="text-center text-sm text-gray-400 dark:text-gray-500 py-8">
+          No messages yet. Say hello!
+        </p>
+      )}
 
-        {messages.map((msg) => {
-          const mine = msg.senderId === currentUserId;
-          const day = formatDay(msg.createdAt);
-          const showDay = day !== lastDay;
-          lastDay = day;
+      {messages.map((msg) => {
+        const mine = msg.senderId === currentUserId;
+        const day = formatDay(msg.createdAt);
+        const showDay = day !== lastDay;
+        lastDay = day;
 
-          return (
-            <div key={msg.id}>
-              {showDay && (
-                <div className="flex items-center gap-2 py-3">
-                  <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                  <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{day}</span>
-                  <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                </div>
-              )}
+        return (
+          <div key={msg.id}>
+            {showDay && (
+              <div className="flex items-center gap-2 py-3">
+                <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                <span className="text-xs text-gray-400 dark:text-gray-500 shrink-0">{day}</span>
+                <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+              </div>
+            )}
 
-              <div className={`flex ${mine ? "justify-end" : "justify-start"} mb-1`}>
-                <div className={`max-w-[78%] ${!mine ? "space-y-0.5" : ""}`}>
-                  {isGroup && !mine && (
-                    <p className="text-[11px] font-medium text-gray-400 dark:text-gray-500 px-1">
-                      {senderLabel(msg.sender)}
-                    </p>
-                  )}
-                  <div
-                    className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
-                      mine
-                        ? "bg-msu-red text-msu-white rounded-br-sm"
-                        : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm"
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                    <p className={`text-[10px] mt-0.5 ${mine ? "text-msu-white/70 text-right" : "text-gray-400 dark:text-gray-500"}`}>
-                      {formatTime(msg.createdAt)}
-                    </p>
-                  </div>
+            <div className={`flex ${mine ? "justify-end" : "justify-start"} mb-1`}>
+              <div className={`max-w-[78%] ${!mine ? "space-y-0.5" : ""}`}>
+                {isGroup && !mine && (
+                  <p className="text-[11px] font-medium text-gray-400 dark:text-gray-500 px-1">
+                    {senderLabel(msg.sender)}
+                  </p>
+                )}
+                <div
+                  className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed ${
+                    mine
+                      ? "bg-msu-red text-msu-white rounded-br-sm"
+                      : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm"
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                  <p className={`text-[10px] mt-0.5 ${mine ? "text-msu-white/70 text-right" : "text-gray-400 dark:text-gray-500"}`}>
+                    {formatTime(msg.createdAt)}
+                  </p>
                 </div>
               </div>
             </div>
-          );
-        })}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Input — fixed floating layer above BottomNav, same centering strategy */}
-      <div className="fixed bottom-[4.5rem] left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-md rounded-2xl border border-gray-200 dark:border-gray-700 shadow-lg">
-      <form
-        onSubmit={handleSend}
-        className="flex items-end gap-2 px-4 py-3"
-      >
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSend(e as unknown as React.FormEvent);
-            }
-          }}
-          placeholder="Message…"
-          rows={1}
-          maxLength={2000}
-          className="flex-1 resize-none rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-msu-red/50 focus:border-msu-red max-h-32"
-        />
-        <button
-          type="submit"
-          disabled={!text.trim() || sending}
-          className="shrink-0 h-9 w-9 flex items-center justify-center rounded-full bg-msu-red text-msu-white hover:bg-msu-red/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-        >
-          <Send size={16} />
-        </button>
-      </form>
-      </div>
+          </div>
+        );
+      })}
+      <div ref={bottomRef} />
     </div>
   );
 }
